@@ -1,0 +1,45 @@
+import { createContext, useState, useEffect } from 'react';
+import api from '../services/api';
+
+export const AuthContext = createContext();
+
+export const AuthProvider = ({ children }) => {
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const userData = localStorage.getItem('user');
+        if (token) {
+            setUser(userData ? JSON.parse(userData) : { token });
+        }
+        setLoading(false);
+    }, []);
+
+    const login = async (email, password) => {
+        const res = await api.post('/auth/login', { email, password });
+        console.log("Login response:", res.data);
+        localStorage.setItem('token', res.data.token);
+        if (res.data.user) {
+            console.log("Saving user:", res.data.user);
+            localStorage.setItem('user', JSON.stringify(res.data.user));
+            setUser(res.data.user);
+        } else {
+            console.warn("User data missing in login response");
+            setUser({ token: res.data.token });
+        }
+        return res.data;
+    };
+
+    const logout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+    };
+
+    return (
+        <AuthContext.Provider value={{ user, loading, login, logout }}>
+            {children}
+        </AuthContext.Provider>
+    );
+};
