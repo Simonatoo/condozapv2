@@ -76,19 +76,50 @@ exports.updateProduct = async (req, res) => {
         product.status = status || product.status;
 
         // Handle images:
-        // 1. Start with keptImages (or empty if none provided/all removed)
+        // Only update images if files are uploaded or keptImages is provided.
+        // If neither is present, we assume the user wants to keep existing images as is (unless they explicitly sent empty keptImages array, which we can't easily distinguish from 'undefined' in some contents, but let's assume undefined means 'no change').
+
+        // However, the previous logic was:
+        // let finalImages = [];
+        // if (req.body.keptImages) ...
+        // if (req.files) ...
+        // product.images = finalImages; 
+
+        // This overwrites product.images with empty array if nothing is sent.
+        // We want to support partial updates where we don't send images at all.
+
+        let shouldUpdateImages = false;
         let finalImages = [];
-        if (req.body.keptImages) {
+
+        if (req.body.keptImages !== undefined) {
+            shouldUpdateImages = true;
             finalImages = Array.isArray(req.body.keptImages) ? req.body.keptImages : [req.body.keptImages];
         }
 
-        // 2. Append new images
         if (req.files && req.files.length > 0) {
+            shouldUpdateImages = true;
             const newImages = req.files.map(file => file.path);
+            // If keptImages was undefined but we have new files, do we keep old ones? 
+            // Usually, if I upload new files without specifying keptImages, it might mean "add to existing" or "replace all".
+            // But standard HTML forms don't send existing files. 
+            // Let's stick to the previous contract: "keptImages" defines what to keep.
+            // But if I *only* want to update status, I don't send files nor keptImages.
+
+            // If keptImages is undefined, let's assume we want to keep ALL existing images + new ones? 
+            // Or should we stick to "undefined keptImages means empty"? 
+            // The issue is the status update didn't send keptImages.
+
+            // If I send new files but NOT keptImages, I probably want to replace everything or add to it.
+            // But safely, if I send files, shouldUpdateImages is true.
+            // If I don't send keptImages, finalImages starts empty. So it replaces everything with new files.
+
+            // If I send NOTHING (no files, no keptImages) -> shouldUpdateImages remains false.
             finalImages = [...finalImages, ...newImages];
         }
 
-        product.images = finalImages;
+        if (shouldUpdateImages) {
+            product.images = finalImages;
+        }
 
         await product.save();
         res.json(product);

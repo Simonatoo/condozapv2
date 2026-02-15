@@ -2,8 +2,7 @@ import { useEffect, useState, useContext } from 'react';
 import api from '../services/api';
 import Navbar from '../components/Navbar';
 import { AuthContext } from '../context/AuthContext';
-import { Tag, MapPin, DollarSign, Package, Plus, X, Camera } from 'lucide-react';
-import ActionSheetItem from '../components/actionSheet/ActionSheetItem';
+import { Package, Plus, X, Camera, Pencil, Trash } from 'lucide-react';
 import ActionSheet from '../components/actionSheet/ActionSheet';
 
 const MyProducts = () => {
@@ -76,7 +75,21 @@ const MyProducts = () => {
     const handleStatusUpdate = async (newStatus) => {
         if (!statusSheetProduct) return;
         try {
-            await api.put(`/products/${statusSheetProduct._id}`, { status: newStatus });
+            // Need to send FormData to handle keptImages if needed, or update backend to handle partial JSON updates.
+            // Current backend updateProduct expects keptImages in body if we want to keep them, 
+            // BUT if we don't send *any* image data (no files, no keptImages) and we use the 'images' field logic...
+            // Let's check backend logic:
+            // "let finalImages = []; if (req.body.keptImages) ... product.images = finalImages;"
+            // If keptImages is undefined, finalImages is empty.
+            // So we MUST send keptImages.
+
+            const data = {
+                status: newStatus,
+                keptImages: statusSheetProduct.images || []
+            };
+
+            await api.put(`/products/${statusSheetProduct._id}`, data);
+
             setStatusSheetProduct(null); // Close sheet
             fetchMyProducts();
         } catch (err) {
@@ -184,7 +197,7 @@ const MyProducts = () => {
                 {products.map((product) => (
                     <div
                         key={product._id}
-                        onClick={() => handleEdit(product)}
+                        onClick={() => setStatusSheetProduct(product)}
                         className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden active:scale-[0.99] transition-transform duration-100 cursor-pointer"
                     >
                         <div className="p-4">
@@ -212,18 +225,6 @@ const MyProducts = () => {
                                     {product.value.toFixed(2).replace('.', ',')}
                                 </div>
                             </div>
-
-                            <div className="mt-3 pt-3 border-t border-gray-50">
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setStatusSheetProduct(product);
-                                    }}
-                                    className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-bold rounded-xl transition-colors"
-                                >
-                                    Atualizar Status
-                                </button>
-                            </div>
                         </div>
                     </div>
                 ))}
@@ -249,23 +250,35 @@ const MyProducts = () => {
             {statusSheetProduct && (
                 <ActionSheet onClose={() => setStatusSheetProduct(null)} options={[
                     {
+                        show: statusSheetProduct.status !== 'enabled',
                         label: "Ativar produto",
                         variant: "default",
                         action: () => handleStatusUpdate('enabled')
                     },
                     {
+                        show: statusSheetProduct.status !== 'sold',
                         label: "Marcar como Vendido",
                         variant: "default",
                         action: () => handleStatusUpdate('sold')
                     },
                     {
+                        show: statusSheetProduct.status !== 'disabled',
                         label: "Desativar Anúncio",
                         variant: "default",
                         action: () => handleStatusUpdate('disabled')
                     },
                     {
+                        show: true,
+                        label: "Editar Produto",
+                        variant: "default",
+                        icon: <Pencil size={18} strokeWidth={2} />,
+                        action: () => handleEdit(statusSheetProduct)
+                    },
+                    {
+                        show: true,
                         label: "Excluir Produto",
                         variant: "destructive",
+                        icon: <Trash size={18} strokeWidth={2} />,
                         action: () => handleDeleteProduct(statusSheetProduct._id)
                     }
                 ]} onClickItem={(item) => item.action && item.action()} />
