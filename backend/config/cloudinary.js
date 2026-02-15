@@ -18,6 +18,11 @@ const storage = new CloudinaryStorage({
         return {
             folder: 'products',
             resource_type: 'auto',
+            transformation: [
+                { width: 1000, height: 1000, crop: 'fill' },
+                { quality: 'auto' }
+            ],
+            allowed_formats: ['jpg', 'png', 'webp', 'jpeg']
         };
     },
 });
