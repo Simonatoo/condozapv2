@@ -8,6 +8,15 @@ const Home = () => {
     const [loading, setLoading] = useState(true);
 
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [activeImage, setActiveImage] = useState('');
+
+    useEffect(() => {
+        if (selectedProduct && selectedProduct.images && selectedProduct.images.length > 0) {
+            setActiveImage(selectedProduct.images[0]);
+        } else {
+            setActiveImage('');
+        }
+    }, [selectedProduct]);
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -52,15 +61,10 @@ const Home = () => {
                             onClick={() => setSelectedProduct(product)}
                             className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden active:opacity-90 transition-opacity cursor-pointer flex flex-col"
                         >
-                            {/* Image Placeholder */}
-                            <div className="aspect-square bg-gray-100 w-full flex items-center justify-center text-gray-300 relative">
-                                <span className="text-xs">Sem Imagem</span>
-                                {product.status !== 'enabled' && (
-                                    <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
-                                        <span className="bg-gray-800 text-white text-[10px] uppercase font-bold px-2 py-1 rounded">
-                                            {product.status === 'sold' ? 'Vendido' : 'Indisponível'}
-                                        </span>
-                                    </div>
+                            {/* Image */}
+                            <div className="h-50 overflow-hidden bg-gray-100 flex items-center justify-center text-gray-300">
+                                {product.images.length > 0 && (
+                                    <img src={product.images[0]} alt={product.name} />
                                 )}
                             </div>
 
@@ -111,12 +115,32 @@ const Home = () => {
                     {/* Content Scrollable */}
                     <div className="flex-1 overflow-y-auto pb-24">
                         {/* Image Area */}
-                        <div className="h-96 bg-gray-100 flex items-center justify-center text-gray-400">
+                        <div className="h-96 bg-gray-100 flex items-center justify-center text-gray-400 overflow-hidden">
                             <div className="flex flex-col items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-image mb-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>
-                                <span>Sem Imagem</span>
+                                {activeImage ? (
+                                    <img src={activeImage} alt={selectedProduct.name} className="w-full h-full object-contain" />
+                                ) : (
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-gray-400">Sem Imagem</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
+
+                        {/* Thumbnails */}
+                        {selectedProduct.images && selectedProduct.images.length > 1 && (
+                            <div className="flex gap-2 px-4 py-2 overflow-x-auto bg-white border-b border-gray-100">
+                                {selectedProduct.images.map((img, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => setActiveImage(img)}
+                                        className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${activeImage === img ? 'border-blue-600 opacity-100 ring-2 ring-blue-100' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                                    >
+                                        <img src={img} alt={`Thumbnail ${index}`} className="w-full h-full object-cover" />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
 
                         {/* Product Info */}
                         <div className="px-5 py-6">

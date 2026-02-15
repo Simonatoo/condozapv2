@@ -13,6 +13,10 @@ const productSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    images: {
+        type: [String],
+        default: []
+    },
     status: {
         type: String,
         enum: ['enabled', 'sold', 'disabled'],

@@ -3,6 +3,8 @@ import api from '../services/api';
 import Navbar from '../components/Navbar';
 import { AuthContext } from '../context/AuthContext';
 import { Tag, MapPin, DollarSign, Package, Plus, X, Camera } from 'lucide-react';
+import ActionSheetItem from '../components/actionSheet/ActionSheetItem';
+import ActionSheet from '../components/actionSheet/ActionSheet';
 
 const MyProducts = () => {
     const [products, setProducts] = useState([]);
@@ -17,6 +19,11 @@ const MyProducts = () => {
         description: '',
         value: ''
     });
+
+    // Split state for easier management
+    const [existingImages, setExistingImages] = useState([]); // URLs from DB
+    const [newImages, setNewImages] = useState([]); // File objects
+    const [newImagePreviews, setNewImagePreviews] = useState([]); // Blob URLs
     const [submitting, setSubmitting] = useState(false);
 
     // Status Sheet State
@@ -60,6 +67,9 @@ const MyProducts = () => {
             description: product.description,
             value: product.value
         });
+        setExistingImages(product.images || []);
+        setNewImages([]);
+        setNewImagePreviews([]);
         setIsModalOpen(true);
     };
 
@@ -75,6 +85,19 @@ const MyProducts = () => {
         }
     };
 
+    const handleDeleteProduct = async (productId) => {
+        if (!window.confirm("Tem certeza que deseja excluir este produto?")) return;
+
+        try {
+            await api.delete(`/products/${productId}`);
+            setStatusSheetProduct(null);
+            fetchMyProducts();
+        } catch (err) {
+            console.error("Error deleting product", err);
+            alert("Erro ao excluir produto");
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!user || !user.id) {
@@ -86,22 +109,49 @@ const MyProducts = () => {
         try {
             if (editingProduct) {
                 // Update existing product
-                await api.put(`/products/${editingProduct._id}`, {
-                    ...formData,
-                    status: editingProduct.status // Keep existing status or allow edit? User didn't specify. Keeping it simple.
+                const data = new FormData();
+                data.append('name', formData.name);
+                data.append('description', formData.description);
+                data.append('value', formData.value);
+                data.append('status', editingProduct.status);
+
+                // Append kept images
+                existingImages.forEach((img) => {
+                    data.append('keptImages', img);
+                });
+
+                // Append new images
+                newImages.forEach((image) => {
+                    data.append('images', image);
+                });
+
+                await api.put(`/products/${editingProduct._id}`, data, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
                 });
             } else {
                 // Create new product
-                await api.post('/products', {
-                    ...formData,
-                    user_id: user.id,
-                    status: 'enabled'
+                const data = new FormData();
+                data.append('name', formData.name);
+                data.append('description', formData.description);
+                data.append('value', formData.value);
+                data.append('user_id', user.id);
+                data.append('status', 'enabled');
+
+                newImages.forEach((image) => {
+                    data.append('images', image);
+                });
+
+                await api.post('/products', data, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
                 });
             }
 
             setIsModalOpen(false);
             setEditingProduct(null);
             setFormData({ name: '', description: '', value: '' });
+            setExistingImages([]);
+            setNewImages([]);
+            setNewImagePreviews([]);
             fetchMyProducts();
         } catch (err) {
             console.error("Error saving product", err);
@@ -147,6 +197,13 @@ const MyProducts = () => {
                                 </span>
                             </div>
 
+                            {/* Image Display in List */}
+                            {product.images && product.images.length > 0 && (
+                                <div className="mb-3 h-40 rounded-xl overflow-hidden">
+                                    <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                                </div>
+                            )}
+
                             <p className="text-gray-500 text-sm mb-4 line-clamp-2">{product.description}</p>
 
                             <div className="flex items-center justify-between pt-3 border-t border-gray-50">
@@ -190,132 +247,167 @@ const MyProducts = () => {
 
             {/* Status Action Sheet */}
             {statusSheetProduct && (
-                <>
-                    <div
-                        className="fixed inset-0 bg-black/50 z-50 transition-opacity"
-                        onClick={() => setStatusSheetProduct(null)}
-                    />
-                    <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 p-4 pb-8 animate-in slide-in-from-bottom duration-300">
-                        <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-6" />
-
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">
-                            Alterar Status: {statusSheetProduct.name}
-                        </h3>
-
-                        <div className="space-y-3">
-                            {statusSheetProduct.status !== 'enabled' && (
-                                <button
-                                    onClick={() => handleStatusUpdate('enabled')}
-                                    className="w-full p-4 bg-gray-50 hover:bg-green-50 text-gray-900 hover:text-green-700 font-bold rounded-xl text-left flex items-center transition-colors"
-                                >
-                                    <div className="w-3 h-3 rounded-full bg-green-500 mr-3" />
-                                    Ativar Produto
-                                </button>
-                            )}
-
-                            {statusSheetProduct.status !== 'sold' && (
-                                <button
-                                    onClick={() => handleStatusUpdate('sold')}
-                                    className="w-full p-4 bg-gray-50 hover:bg-gray-100 text-gray-900 font-bold rounded-xl text-left flex items-center transition-colors"
-                                >
-                                    <div className="w-3 h-3 rounded-full bg-gray-400 mr-3" />
-                                    Marcar como Vendido
-                                </button>
-                            )}
-
-                            {statusSheetProduct.status !== 'disabled' && (
-                                <button
-                                    onClick={() => handleStatusUpdate('disabled')}
-                                    className="w-full p-4 bg-gray-50 hover:bg-red-50 text-gray-900 hover:text-red-700 font-bold rounded-xl text-left flex items-center transition-colors"
-                                >
-                                    <div className="w-3 h-3 rounded-full bg-red-500 mr-3" />
-                                    Desativar Anúncio
-                                </button>
-                            )}
-
-                            <button
-                                onClick={() => setStatusSheetProduct(null)}
-                                className="w-full p-4 text-gray-500 font-medium text-center mt-2"
-                            >
-                                Cancelar
-                            </button>
-                        </div>
-                    </div>
-                </>
-            )}
+                <ActionSheet onClose={() => setStatusSheetProduct(null)} options={[
+                    {
+                        label: "Ativar produto",
+                        variant: "default",
+                        action: () => handleStatusUpdate('enabled')
+                    },
+                    {
+                        label: "Marcar como Vendido",
+                        variant: "default",
+                        action: () => handleStatusUpdate('sold')
+                    },
+                    {
+                        label: "Desativar Anúncio",
+                        variant: "default",
+                        action: () => handleStatusUpdate('disabled')
+                    },
+                    {
+                        label: "Excluir Produto",
+                        variant: "destructive",
+                        action: () => handleDeleteProduct(statusSheetProduct._id)
+                    }
+                ]} onClickItem={(item) => item.action && item.action()} />
+            )
+            }
 
             {/* Full Screen Modal (Edit/Create) */}
-            {isModalOpen && (
-                <div className="fixed inset-0 bg-white z-50 flex flex-col animate-in slide-in-from-bottom duration-300">
-                    {/* Header */}
-                    <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                        <h2 className="text-lg font-bold text-gray-900">
-                            {editingProduct ? 'Editar Produto' : 'Novo Produto'}
-                        </h2>
-                        <button onClick={() => setIsModalOpen(false)} className="text-gray-500 p-2 rounded-full hover:bg-gray-100">
-                            <X size={24} />
-                        </button>
-                    </div>
-
-                    {/* Form */}
-                    <form onSubmit={handleSubmit} className="flex-1 p-4 space-y-6 overflow-y-auto">
-                        {/* Image Placeholder */}
-                        <div className="w-full h-40 bg-gray-50 rounded-2xl flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200">
-                            <Camera size={32} className="mb-2 text-gray-300" />
-                            <span className="text-sm font-medium">Adicionar Foto (Em breve)</span>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-bold text-gray-900 mb-2">Nome do Produto</label>
-                            <input
-                                name="name"
-                                value={formData.name}
-                                onChange={handleInputChange}
-                                required
-                                className="w-full p-4 bg-gray-50 rounded-xl border border-transparent focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-50 outline-none transition-all font-medium text-gray-900 placeholder:text-gray-400"
-                                placeholder="Ex: Furadeira Bosch"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-bold text-gray-900 mb-2">Valor (R$)</label>
-                            <input
-                                name="value"
-                                type="number"
-                                value={formData.value}
-                                onChange={handleInputChange}
-                                required
-                                className="w-full p-4 bg-gray-50 rounded-xl border border-transparent focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-50 outline-none transition-all font-medium text-gray-900 placeholder:text-gray-400"
-                                placeholder="0,00"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-bold text-gray-900 mb-2">Descrição</label>
-                            <textarea
-                                name="description"
-                                value={formData.description}
-                                onChange={handleInputChange}
-                                required
-                                rows={5}
-                                className="w-full p-4 bg-gray-50 rounded-xl border border-transparent focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-50 outline-none transition-all font-medium text-gray-900 placeholder:text-gray-400 resize-none"
-                                placeholder="Descreva os detalhes do produto, tempo de uso, estado de conservação..."
-                            />
-                        </div>
-
-                        <div className="pt-4 pb-8">
-                            <button
-                                type="submit"
-                                disabled={submitting}
-                                className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
-                            >
-                                {submitting ? 'Salvando...' : (editingProduct ? 'Salvar Alterações' : 'Anunciar Produto')}
+            {
+                isModalOpen && (
+                    <div className="fixed inset-0 bg-white z-50 flex flex-col animate-in slide-in-from-bottom duration-300">
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                            <h2 className="text-lg font-bold text-gray-900">
+                                {editingProduct ? 'Editar Produto' : 'Novo Produto'}
+                            </h2>
+                            <button onClick={() => setIsModalOpen(false)} className="text-gray-500 p-2 rounded-full hover:bg-gray-100">
+                                <X size={24} />
                             </button>
                         </div>
-                    </form>
-                </div>
-            )}
-        </div>
+
+                        {/* Form */}
+                        <form onSubmit={handleSubmit} className="flex-1 p-4 space-y-6 overflow-y-auto">
+                            {/* Image Upload */}
+                            {/* Image Upload */}
+                            <div>
+                                <label className="block text-sm font-bold text-gray-900 mb-2">Imagens do Produto (Max 5)</label>
+                                <div className="grid grid-cols-3 gap-2 mb-2">
+                                    {/* Existing Images */}
+                                    {existingImages.map((url, index) => (
+                                        <div key={`existing-${index}`} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 group">
+                                            <img src={url} alt={`Existing ${index}`} className="w-full h-full object-cover" />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setExistingImages(existingImages.filter((_, i) => i !== index));
+                                                }}
+                                                className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full hover:bg-red-500 transition-colors"
+                                            >
+                                                <X size={14} />
+                                            </button>
+                                        </div>
+                                    ))}
+
+                                    {/* New Images */}
+                                    {newImagePreviews.map((url, index) => (
+                                        <div key={`new-${index}`} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 group">
+                                            <img src={url} alt={`New ${index}`} className="w-full h-full object-cover" />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const newPreviews = [...newImagePreviews];
+                                                    const newFiles = [...newImages];
+                                                    newPreviews.splice(index, 1);
+                                                    newFiles.splice(index, 1);
+                                                    setNewImagePreviews(newPreviews);
+                                                    setNewImages(newFiles);
+                                                }}
+                                                className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full hover:bg-red-500 transition-colors"
+                                            >
+                                                <X size={14} />
+                                            </button>
+                                        </div>
+                                    ))}
+
+                                    {/* Add Button */}
+                                    {(existingImages.length + newImages.length) < 5 && (
+                                        <label className="aspect-square bg-gray-50 rounded-xl flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors">
+                                            <Camera size={24} className="mb-1" />
+                                            <span className="text-xs">Adicionar</span>
+                                            <input
+                                                type="file"
+                                                multiple
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    const files = Array.from(e.target.files);
+                                                    if (existingImages.length + newImages.length + files.length > 5) {
+                                                        alert("Máximo de 5 imagens permitidas");
+                                                        return;
+                                                    }
+                                                    setNewImages([...newImages, ...files]);
+                                                    const newPreviews = files.map(file => URL.createObjectURL(file));
+                                                    setNewImagePreviews([...newImagePreviews, ...newPreviews]);
+                                                }}
+                                            />
+                                        </label>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-gray-900 mb-2">Nome do Produto</label>
+                                <input
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="w-full p-4 bg-gray-50 rounded-xl border border-transparent focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-50 outline-none transition-all font-medium text-gray-900 placeholder:text-gray-400"
+                                    placeholder="Ex: Furadeira Bosch"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-gray-900 mb-2">Valor (R$)</label>
+                                <input
+                                    name="value"
+                                    type="number"
+                                    value={formData.value}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="w-full p-4 bg-gray-50 rounded-xl border border-transparent focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-50 outline-none transition-all font-medium text-gray-900 placeholder:text-gray-400"
+                                    placeholder="0,00"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-gray-900 mb-2">Descrição</label>
+                                <textarea
+                                    name="description"
+                                    value={formData.description}
+                                    onChange={handleInputChange}
+                                    required
+                                    rows={5}
+                                    className="w-full p-4 bg-gray-50 rounded-xl border border-transparent focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-50 outline-none transition-all font-medium text-gray-900 placeholder:text-gray-400 resize-none"
+                                    placeholder="Descreva os detalhes do produto, tempo de uso, estado de conservação..."
+                                />
+                            </div>
+
+                            <div className="pt-4 pb-8">
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+                                >
+                                    {submitting ? 'Salvando...' : (editingProduct ? 'Salvar Alterações' : 'Anunciar Produto')}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                )
+            }
+        </div >
     );
 };
 
