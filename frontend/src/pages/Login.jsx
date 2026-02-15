@@ -63,14 +63,14 @@ const Login = () => {
 
     const handleGoogleRegister = async (e) => {
         e.preventDefault();
-        if (!apartment) {
-            setError('Por favor, informe o seu apartamento');
+        if (!apartment || !telefone) {
+            setError('Por favor, informe todos os campos obrigatórios');
             return;
         }
         setLoading(true);
         setError('');
         try {
-            await googleLogin(googleToken, apartment);
+            await googleLogin(googleToken, apartment, telefone);
             navigate('/');
         } catch (err) {
             console.error("Google Registration Error:", err);
@@ -91,7 +91,7 @@ const Login = () => {
                         Quase lá, {name.split(' ')[0]}!
                     </h2>
                     <p className="mt-2 text-center text-sm text-gray-500">
-                        Para concluir seu cadastro, informe o seu apartamento.
+                        Para concluir seu cadastro, informe seus dados de contato.
                     </p>
                 </div>
 
@@ -102,6 +102,27 @@ const Login = () => {
                                 {error}
                             </div>
                         )}
+
+                        <div>
+                            <label htmlFor="telefone-google" className="block text-sm font-medium leading-6 text-gray-900">
+                                Seu Telefone
+                            </label>
+                            <div className="mt-2 relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Phone className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    id="telefone-google"
+                                    name="telefone"
+                                    type="tel"
+                                    required
+                                    value={telefone}
+                                    onChange={(e) => setTelefone(e.target.value)}
+                                    className="block w-full rounded-md border-0 py-3 pl-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                                    placeholder="(00) 00000-0000"
+                                />
+                            </div>
+                        </div>
 
                         <div>
                             <label htmlFor="apartment-google" className="block text-sm font-medium leading-6 text-gray-900">

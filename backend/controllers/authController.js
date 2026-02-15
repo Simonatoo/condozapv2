@@ -87,7 +87,7 @@ exports.login = async (req, res) => {
 };
 
 exports.googleLogin = async (req, res) => {
-    const { token, apartment } = req.body;
+    const { token, apartment, telefone } = req.body;
     try {
         const ticket = await client.verifyIdToken({
             idToken: token,
@@ -99,23 +99,24 @@ exports.googleLogin = async (req, res) => {
         let user = await User.findOne({ email });
 
         if (!user) {
-            // If user doesn't exist and no apartment provided, request it
-            if (!apartment) {
+            // If user doesn't exist and no apartment/telefone provided, request it
+            if (!apartment || !telefone) {
                 return res.status(200).json({
                     needsRegistration: true,
                     email,
                     name,
-                    msg: 'Por favor, informe seu apartamento para concluir o cadastro.'
+                    msg: 'Por favor, informe seu apartamento e telefone para concluir o cadastro.'
                 });
             }
 
-            // Register new user with apartment
+            // Register new user with apartment and telefone
             user = new User({
                 name,
                 email,
                 apartment,
-                password: '', // No password for Google users
-                role: 'morador', // Default role
+                telefone, // Use provided telefone
+                password: Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8), // Random dummy password
+                role: 'default', // Correct role based on User model enum
             });
             await user.save();
         }
