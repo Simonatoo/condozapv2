@@ -52,8 +52,21 @@ export const AuthProvider = ({ children }) => {
         return res.data;
     };
 
+    const googleLogin = async (googleToken) => {
+        const res = await api.post('/auth/google-login', { token: googleToken });
+        console.log("Google Login response:", res.data);
+        localStorage.setItem('token', res.data.token);
+        if (res.data.user) {
+            localStorage.setItem('user', JSON.stringify(res.data.user));
+            setUser(res.data.user);
+        } else {
+            setUser({ token: res.data.token });
+        }
+        return res.data;
+    };
+
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout, register }}>
+        <AuthContext.Provider value={{ user, loading, login, logout, register, googleLogin }}>
             {children}
         </AuthContext.Provider>
     );

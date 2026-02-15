@@ -2,6 +2,7 @@ import { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, ArrowRight, User, Phone, Home } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
     const [isRegister, setIsRegister] = useState(false);
@@ -11,7 +12,7 @@ const Login = () => {
     const [telefone, setTelefone] = useState('');
     const [apartment, setApartment] = useState('');
 
-    const { login, register } = useContext(AuthContext);
+    const { login, register, googleLogin } = useContext(AuthContext);
     const navigate = useNavigate();
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -31,6 +32,19 @@ const Login = () => {
         } catch (err) {
             console.error(err);
             setError(err.response?.data?.msg || 'Erro na autenticação');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        setLoading(true);
+        try {
+            await googleLogin(credentialResponse.credential);
+            navigate('/');
+        } catch (err) {
+            console.error("Google Login Error:", err);
+            setError('Falha ao entrar com Google');
         } finally {
             setLoading(false);
         }
@@ -171,7 +185,7 @@ const Login = () => {
                         </div>
                     </div>
 
-                    <div>
+                    <div className="space-y-4">
                         <button
                             type="submit"
                             disabled={loading}
@@ -180,6 +194,28 @@ const Login = () => {
                             {loading ? (isRegister ? 'Criando conta...' : 'Entrando...') : (isRegister ? 'Criar conta' : 'Entrar')}
                             {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
                         </button>
+
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                                <div className="w-full border-t border-gray-200"></div>
+                            </div>
+                            <div className="relative flex justify-center text-sm font-medium leading-6">
+                                <span className="bg-gray-50 px-6 text-gray-400">ou</span>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-center">
+                            <GoogleLogin
+                                onSuccess={handleGoogleSuccess}
+                                onError={() => {
+                                    setError('Login com Google falhou');
+                                }}
+                                useOneTap
+                                theme="outline"
+                                shape="pill"
+                                width="100%"
+                            />
+                        </div>
                     </div>
 
                     <div className="text-center">

@@ -12,4 +12,9 @@ router.post('/register', authController.register);
 // @access  Public
 router.post('/login', authController.login);
 
+// @route   POST api/auth/google-login
+// @desc    Google Login
+// @access  Public
+router.post('/google-login', authController.googleLogin);
+
 module.exports = router;

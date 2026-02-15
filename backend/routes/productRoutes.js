@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
 const upload = require('../config/cloudinary');
+const auth = require('../middleware/auth');
 
 // @route   GET api/products
 // @desc    Get all products
@@ -15,8 +16,8 @@ router.get('/:id', productController.getProductById);
 
 // @route   POST api/products
 // @desc    Create a product
-// @access  Private (TODO: middleware)
-router.post('/', (req, res, next) => {
+// @access  Private
+router.post('/', auth, (req, res, next) => {
     upload.array('images', 5)(req, res, (err) => {
         if (err) {
             console.error("Multer/Cloudinary Error:", err);
@@ -29,7 +30,7 @@ router.post('/', (req, res, next) => {
 // @route   PUT api/products/:id
 // @desc    Update a product
 // @access  Private
-router.put('/:id', (req, res, next) => {
+router.put('/:id', auth, (req, res, next) => {
     upload.array('images', 5)(req, res, (err) => {
         if (err) {
             console.error("Multer/Cloudinary Error:", err);
@@ -42,6 +43,6 @@ router.put('/:id', (req, res, next) => {
 // @route   DELETE api/products/:id
 // @desc    Delete a product
 // @access  Private
-router.delete('/:id', productController.deleteProduct);
+router.delete('/:id', auth, productController.deleteProduct);
 
 module.exports = router;
