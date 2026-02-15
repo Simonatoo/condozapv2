@@ -52,9 +52,14 @@ export const AuthProvider = ({ children }) => {
         return res.data;
     };
 
-    const googleLogin = async (googleToken) => {
-        const res = await api.post('/auth/google-login', { token: googleToken });
+    const googleLogin = async (googleToken, apartment = null) => {
+        const res = await api.post('/auth/google-login', { token: googleToken, apartment });
         console.log("Google Login response:", res.data);
+
+        if (res.data.needsRegistration) {
+            return res.data; // Return registration requirement info
+        }
+
         localStorage.setItem('token', res.data.token);
         if (res.data.user) {
             localStorage.setItem('user', JSON.stringify(res.data.user));

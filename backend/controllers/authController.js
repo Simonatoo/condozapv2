@@ -87,22 +87,33 @@ exports.login = async (req, res) => {
 };
 
 exports.googleLogin = async (req, res) => {
-    const { token } = req.body;
+    const { token, apartment } = req.body;
     try {
         const ticket = await client.verifyIdToken({
             idToken: token,
             audience: process.env.GOOGLE_CLIENT_ID,
         });
         const payload = ticket.getPayload();
-        const { email, name, picture } = payload;
+        const { email, name } = payload;
 
         let user = await User.findOne({ email });
 
         if (!user) {
-            // Register new user
+            // If user doesn't exist and no apartment provided, request it
+            if (!apartment) {
+                return res.status(200).json({
+                    needsRegistration: true,
+                    email,
+                    name,
+                    msg: 'Por favor, informe seu apartamento para concluir o cadastro.'
+                });
+            }
+
+            // Register new user with apartment
             user = new User({
                 name,
                 email,
+                apartment,
                 password: '', // No password for Google users
                 role: 'morador', // Default role
             });

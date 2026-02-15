@@ -17,6 +17,9 @@ const Login = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    const [showGoogleApartment, setShowGoogleApartment] = useState(false);
+    const [googleToken, setGoogleToken] = useState(null);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -39,9 +42,17 @@ const Login = () => {
 
     const handleGoogleSuccess = async (credentialResponse) => {
         setLoading(true);
+        setError('');
         try {
-            await googleLogin(credentialResponse.credential);
-            navigate('/');
+            const result = await googleLogin(credentialResponse.credential);
+            if (result.needsRegistration) {
+                setGoogleToken(credentialResponse.credential);
+                setShowGoogleApartment(true);
+                setName(result.name || '');
+                setEmail(result.email || '');
+            } else {
+                navigate('/');
+            }
         } catch (err) {
             console.error("Google Login Error:", err);
             setError('Falha ao entrar com Google');
@@ -49,6 +60,95 @@ const Login = () => {
             setLoading(false);
         }
     };
+
+    const handleGoogleRegister = async (e) => {
+        e.preventDefault();
+        if (!apartment) {
+            setError('Por favor, informe o seu apartamento');
+            return;
+        }
+        setLoading(true);
+        setError('');
+        try {
+            await googleLogin(googleToken, apartment);
+            navigate('/');
+        } catch (err) {
+            console.error("Google Registration Error:", err);
+            setError('Falha ao concluir cadastro com Google');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (showGoogleApartment) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex flex-col justify-center px-6 py-12 lg:px-8">
+                <div className="sm:mx-auto sm:w-full sm:max-w-sm text-center">
+                    <div className="mx-auto h-12 w-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
+                        <Home className="text-white" size={24} />
+                    </div>
+                    <h2 className="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+                        Quase lá, {name.split(' ')[0]}!
+                    </h2>
+                    <p className="mt-2 text-center text-sm text-gray-500">
+                        Para concluir seu cadastro, informe o seu apartamento.
+                    </p>
+                </div>
+
+                <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+                    <form className="space-y-6" onSubmit={handleGoogleRegister}>
+                        {error && (
+                            <div className="bg-red-50 text-red-500 text-sm p-3 rounded-lg text-center font-medium">
+                                {error}
+                            </div>
+                        )}
+
+                        <div>
+                            <label htmlFor="apartment-google" className="block text-sm font-medium leading-6 text-gray-900">
+                                Seu Apartamento
+                            </label>
+                            <div className="mt-2 relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Home className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    id="apartment-google"
+                                    name="apartment"
+                                    type="text"
+                                    required
+                                    value={apartment}
+                                    onChange={(e) => setApartment(e.target.value)}
+                                    className="block w-full rounded-md border-0 py-3 pl-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                                    placeholder="Ex: Apto 101"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="flex w-full justify-center items-center rounded-xl bg-blue-600 px-3 py-3.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                                {loading ? 'Finalizando...' : 'Concluir cadastro'}
+                                {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
+                            </button>
+                        </div>
+
+                        <div className="text-center">
+                            <button
+                                type="button"
+                                onClick={() => setShowGoogleApartment(false)}
+                                className="text-sm font-semibold text-gray-500 hover:text-gray-700"
+                            >
+                                Voltar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center px-6 py-12 lg:px-8">
