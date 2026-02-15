@@ -1,12 +1,17 @@
 import { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Mail, ArrowRight } from 'lucide-react';
+import { Lock, Mail, ArrowRight, User, Phone, Home } from 'lucide-react';
 
 const Login = () => {
+    const [isRegister, setIsRegister] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { login } = useContext(AuthContext);
+    const [name, setName] = useState('');
+    const [telefone, setTelefone] = useState('');
+    const [apartment, setApartment] = useState('');
+
+    const { login, register } = useContext(AuthContext);
     const navigate = useNavigate();
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -14,11 +19,18 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        setError('');
+
         try {
-            await login(email, password);
+            if (isRegister) {
+                await register({ name, email, password, telefone, apartment });
+            } else {
+                await login(email, password);
+            }
             navigate('/');
         } catch (err) {
-            setError('Credenciais inválidas');
+            console.error(err);
+            setError(err.response?.data?.msg || 'Erro na autenticação');
         } finally {
             setLoading(false);
         }
@@ -31,10 +43,10 @@ const Login = () => {
                     <Lock className="text-white" size={24} />
                 </div>
                 <h2 className="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-                    Bem-vindo de volta
+                    {isRegister ? 'Crie sua conta' : 'Bem-vindo de volta'}
                 </h2>
                 <p className="mt-2 text-center text-sm text-gray-500">
-                    Entre para acessar a loja do condomínio
+                    {isRegister ? 'Preencha os dados abaixo para começar' : 'Entre para acessar a loja do condomínio'}
                 </p>
             </div>
 
@@ -44,6 +56,73 @@ const Login = () => {
                         <div className="bg-red-50 text-red-500 text-sm p-3 rounded-lg text-center font-medium">
                             {error}
                         </div>
+                    )}
+
+                    {isRegister && (
+                        <>
+                            <div>
+                                <label htmlFor="name" className="block text-sm font-medium leading-6 text-gray-900">
+                                    Nome completo
+                                </label>
+                                <div className="mt-2 relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <User className="h-5 w-5 text-gray-400" />
+                                    </div>
+                                    <input
+                                        id="name"
+                                        name="name"
+                                        type="text"
+                                        required={isRegister}
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        className="block w-full rounded-md border-0 py-3 pl-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                                        placeholder="Seu nome"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label htmlFor="telefone" className="block text-sm font-medium leading-6 text-gray-900">
+                                    Telefone
+                                </label>
+                                <div className="mt-2 relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <Phone className="h-5 w-5 text-gray-400" />
+                                    </div>
+                                    <input
+                                        id="telefone"
+                                        name="telefone"
+                                        type="tel"
+                                        required={isRegister}
+                                        value={telefone}
+                                        onChange={(e) => setTelefone(e.target.value)}
+                                        className="block w-full rounded-md border-0 py-3 pl-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                                        placeholder="(00) 00000-0000"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label htmlFor="apartment" className="block text-sm font-medium leading-6 text-gray-900">
+                                    Apartamento
+                                </label>
+                                <div className="mt-2 relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <Home className="h-5 w-5 text-gray-400" />
+                                    </div>
+                                    <input
+                                        id="apartment"
+                                        name="apartment"
+                                        type="text"
+                                        required={isRegister}
+                                        value={apartment}
+                                        onChange={(e) => setApartment(e.target.value)}
+                                        className="block w-full rounded-md border-0 py-3 pl-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                                        placeholder="Apto 101"
+                                    />
+                                </div>
+                            </div>
+                        </>
                     )}
 
                     <div>
@@ -98,8 +177,18 @@ const Login = () => {
                             disabled={loading}
                             className="flex w-full justify-center items-center rounded-xl bg-blue-600 px-3 py-3.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
                         >
-                            {loading ? 'Entrando...' : 'Entrar'}
+                            {loading ? (isRegister ? 'Criando conta...' : 'Entrando...') : (isRegister ? 'Criar conta' : 'Entrar')}
                             {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
+                        </button>
+                    </div>
+
+                    <div className="text-center">
+                        <button
+                            type="button"
+                            onClick={() => setIsRegister(!isRegister)}
+                            className="text-sm font-semibold text-blue-600 hover:text-blue-500"
+                        >
+                            {isRegister ? 'Já tem uma conta? Entre aqui' : 'Não tem uma conta? Cadastre-se'}
                         </button>
                     </div>
                 </form>

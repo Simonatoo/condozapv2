@@ -37,8 +37,23 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
+    const register = async (userData) => {
+        const res = await api.post('/auth/register', userData);
+        console.log("Register response:", res.data);
+        localStorage.setItem('token', res.data.token);
+        if (res.data.user) {
+            console.log("Saving user:", res.data.user);
+            localStorage.setItem('user', JSON.stringify(res.data.user));
+            setUser(res.data.user);
+        } else {
+            console.warn("User data missing in register response");
+            setUser({ token: res.data.token });
+        }
+        return res.data;
+    };
+
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, logout, register }}>
             {children}
         </AuthContext.Provider>
     );
