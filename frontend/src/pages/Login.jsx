@@ -3,7 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, ArrowRight, User, Phone, Home, X, ChevronLeft } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
-import Logo from '../assets/Logo-color.svg';
+import Logo from '../assets/logo-color.svg';
 
 const Login = () => {
     const [isRegister, setIsRegister] = useState(false);
