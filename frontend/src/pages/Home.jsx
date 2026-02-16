@@ -2,7 +2,7 @@ import { useEffect, useState, useContext } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
-import { Tag, MapPin, DollarSign } from 'lucide-react';
+import { Tag, MapPin, DollarSign, Annoyed, Frown, RefreshCcw } from 'lucide-react';
 
 const Home = () => {
     const { user } = useContext(AuthContext);
@@ -101,8 +101,11 @@ const Home = () => {
                 </div>
 
                 {products.length === 0 && (
-                    <div className="text-center py-10 text-gray-400">
-                        <p>Nenhum produto encontrado.</p>
+                    <div className="text-center py-10 px-2 text-gray-400 flex flex-col items-center justify-center">
+                        <Frown className="mb-2 text-gray-300" size={48} strokeWidth={2} />
+                        <h3 className="text-lg font-medium text-gray-500">Nenhum resultado encontrado</h3>
+                        <p className="text-sm">Parece que seus vizinhos ainda não anunciaram produtos ou serviços.</p>
+                        <button onClick={() => window.location.reload()} className="mt-4 bg-blue-600/10 text-blue-600 px-4 py-2 rounded-full hover:bg-blue-600/20 flex items-center gap-2"><RefreshCcw size={16} strokeWidth={2} />Recarregar página </button>
                     </div>
                 )}
             </main>
