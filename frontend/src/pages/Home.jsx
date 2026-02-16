@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import api from '../services/api';
+import { AuthContext } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import { Tag, MapPin, DollarSign } from 'lucide-react';
 
 const Home = () => {
+    const { user } = useContext(AuthContext);
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -48,8 +50,14 @@ const Home = () => {
             <Navbar />
 
             <main className="px-3 py-3 pb-24">
+                {/* Welcome */}
+                <div className="mb-6">
+                    <h1 className="text-xl font-bold text-gray-900">Olá, {user?.name?.split(' ')[0]}! 👋</h1>
+                    <p className="text-sm text-gray-600 mt-1">Que bom ter você por aqui. Veja o que seus vizinhos prepararam para hoje.</p>
+                </div>
+
                 {/* Feed Header */}
-                <div className="flex items-center justify-between mb-3 px-1">
+                <div className="flex items-center justify-between mb-3">
                     <h2 className="text-lg font-semibold text-gray-800">Últimos lançamentos</h2>
                 </div>
 
@@ -64,7 +72,7 @@ const Home = () => {
                             {/* Image */}
                             <div className="h-50 overflow-hidden bg-gray-100 flex items-center justify-center text-gray-300">
                                 {product.images.length > 0 && (
-                                    <img src={product.images[0]} alt={product.name} />
+                                    <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
                                 )}
                             </div>
 

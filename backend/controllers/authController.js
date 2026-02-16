@@ -41,7 +41,7 @@ exports.register = async (req, res) => {
             { expiresIn: 360000 },
             (err, token) => {
                 if (err) throw err;
-                res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, apartment: user.apartment } });
+                res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, apartment: user.apartment, photo: user.photo } });
             }
         );
     } catch (err) {
@@ -77,7 +77,7 @@ exports.login = async (req, res) => {
             { expiresIn: 360000 },
             (err, token) => {
                 if (err) throw err;
-                res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, apartment: user.apartment } });
+                res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, apartment: user.apartment, photo: user.photo } });
             }
         );
     } catch (err) {
@@ -94,7 +94,7 @@ exports.googleLogin = async (req, res) => {
             audience: process.env.GOOGLE_CLIENT_ID,
         });
         const payload = ticket.getPayload();
-        const { email, name } = payload;
+        const { email, name, picture } = payload;
 
         let user = await User.findOne({ email });
 
@@ -105,6 +105,7 @@ exports.googleLogin = async (req, res) => {
                     needsRegistration: true,
                     email,
                     name,
+                    photo: picture,
                     msg: 'Por favor, informe seu apartamento e telefone para concluir o cadastro.'
                 });
             }
@@ -117,8 +118,15 @@ exports.googleLogin = async (req, res) => {
                 telefone, // Use provided telefone
                 password: Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8), // Random dummy password
                 role: 'default', // Correct role based on User model enum
+                photo: picture
             });
             await user.save();
+        } else {
+            // Update photo if it exists in payload
+            if (picture) {
+                user.photo = picture;
+                await user.save();
+            }
         }
 
         const jwtPayload = {
@@ -134,7 +142,7 @@ exports.googleLogin = async (req, res) => {
             { expiresIn: 360000 },
             (err, jwtToken) => {
                 if (err) throw err;
-                res.json({ token: jwtToken, user: { id: user.id, name: user.name, email: user.email, role: user.role, apartment: user.apartment } });
+                res.json({ token: jwtToken, user: { id: user.id, name: user.name, email: user.email, role: user.role, apartment: user.apartment, photo: user.photo } });
             }
         );
     } catch (err) {

@@ -16,6 +16,13 @@ const Navbar = () => {
         <>
             {/* Top Bar */}
             <div className="fixed top-0 left-0 right-0 bg-white shadow-sm z-10 h-14 flex items-center justify-center px-4">
+                {user && (
+                    <div className="absolute left-4">
+                        <div className='border border-gray-200 bg-gray-100 w-10 h-10 rounded-full overflow-hidden flex items-center justify-center'>
+                            {user.photo ? <img src={user.photo} alt={user.name} className="w-full h-full" /> : <User size={18} />}
+                        </div>
+                    </div>
+                )}
                 <h1 className="text-lg font-bold text-gray-900 tracking-tight">CondoZap</h1>
                 <div className="absolute right-4">
                     <button onClick={logout} className="text-gray-500 hover:text-red-500 transition-colors">
