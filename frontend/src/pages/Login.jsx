@@ -126,7 +126,7 @@ const Login = () => {
 
                         <div>
                             <label htmlFor="apartment-google" className="block text-sm font-medium leading-6 text-gray-900">
-                                Seu Apartamento
+                                Seu Apartamento e Bloco
                             </label>
                             <div className="mt-2 relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -140,7 +140,7 @@ const Login = () => {
                                     value={apartment}
                                     onChange={(e) => setApartment(e.target.value)}
                                     className="block w-full rounded-md border-0 py-3 pl-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                                    placeholder="Ex: Apto 101"
+                                    placeholder="Ex: Apto 101 A"
                                 />
                             </div>
                         </div>
