@@ -199,7 +199,18 @@ const Home = () => {
 
                     {/* Bottom Action Bar */}
                     <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 pb-8">
-                        <button className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-green-100 transition-all active:scale-[0.98] flex items-center justify-center">
+                        <button
+                            onClick={() => {
+                                if (!selectedProduct.user_id?.telefone) {
+                                    alert('Telefone do vendedor não disponível.');
+                                    return;
+                                }
+                                const cleanPhone = selectedProduct.user_id.telefone.replace(/\D/g, '');
+                                const message = encodeURIComponent(`Olá! Encontrei seu produto ${selectedProduct.name} no Condozap e tenho interesse. Ele ainda está disponível?`);
+                                window.open(`https://wa.me/55${cleanPhone}?text=${message}`, '_blank');
+                            }}
+                            className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-3.5 rounded-full font-medium text-md shadow-lg shadow-green-100 transition-all active:scale-[0.98] flex items-center justify-center"
+                        >
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-circle mr-2"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" /></svg>
                             Chamar no WhatsApp
                         </button>
