@@ -290,6 +290,9 @@ const Login = () => {
                                                 placeholder="(00) 00000-0000"
                                             />
                                         </div>
+                                        <p className="text-xs text-gray-500 mt-1.5 ml-1 leading-snug">
+                                            Importante que esse número esteja correto para direcionarmos compradores para o seu WhatsApp.
+                                        </p>
                                     </div>
 
                                     <div>
