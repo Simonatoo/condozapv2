@@ -49,13 +49,13 @@ const Navbar = () => {
                     <span className="text-[10px] font-medium">Meus Produtos</span>
                 </button>
 
-                <button
+                {/* <button
                     className={`flex flex-col items-center justify-center w-full h-full space-y-1 text-gray-400 cursor-not-allowed`}
                 // Placeholder for Profile or other tabs
                 >
                     <User size={24} strokeWidth={2} />
                     <span className="text-[10px] font-medium">Perfil</span>
-                </button>
+                </button> */}
             </div>
 
             {/* Spacer for Bottom Nav */}
