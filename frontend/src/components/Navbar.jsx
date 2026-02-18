@@ -59,7 +59,7 @@ const Navbar = () => {
             </div>
 
             {/* Spacer for Bottom Nav */}
-            <div className="h-16"></div>
+            <div className="h-14"></div>
         </>
     );
 };

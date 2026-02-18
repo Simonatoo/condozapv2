@@ -49,6 +49,11 @@ const Home = () => {
         <div className="min-h-screen bg-gray-50">
             <Navbar />
 
+            {/* Banner */}
+            <div className='bg-[#E12D53] text-center py-2'>
+                <h3 className='text-white text-sm font-bold'>BARRA FUNDA - Perdizes</h3>
+            </div>
+
             <main className="px-3 py-3 pb-24">
                 {/* Welcome */}
                 <div className="mb-6">
@@ -145,7 +150,7 @@ const Home = () => {
                                     <button
                                         key={index}
                                         onClick={() => setActiveImage(img)}
-                                        className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${activeImage === img ? 'border-blue-600 opacity-100 ring-2 ring-blue-100' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                                        className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${activeImage === img ? 'border-blue-600 opacity-100 ring-2 ring-blue-100' : 'border-transparent opacity-60 hover:opacity-100'}`}
                                     >
                                         <img src={img} alt={`Thumbnail ${index}`} className="w-full h-full object-cover" />
                                     </button>
