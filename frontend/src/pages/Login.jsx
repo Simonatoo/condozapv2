@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Mail, ArrowRight, User, Phone, Home, X, ChevronLeft } from 'lucide-react';
+import { Lock, Mail, ArrowRight, User, Phone, Home, X, ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import Logo from '../assets/logo-color.svg';
 
@@ -12,6 +12,9 @@ const Login = () => {
     // Form States
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [name, setName] = useState('');
     const [telefone, setTelefone] = useState('');
     const [apartment, setApartment] = useState('');
@@ -43,6 +46,11 @@ const Login = () => {
 
         try {
             if (isRegister) {
+                if (password !== confirmPassword) {
+                    setError('As senhas não coincidem');
+                    setLoading(false);
+                    return;
+                }
                 await register({ name, email, password, telefone, apartment });
             } else {
                 await login(email, password);
@@ -285,7 +293,7 @@ const Login = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Apartamento</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Apartamento e Bloco</label>
                                         <div className="relative">
                                             <Home className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
                                             <input
@@ -294,7 +302,7 @@ const Login = () => {
                                                 value={apartment}
                                                 onChange={(e) => setApartment(e.target.value)}
                                                 className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3.5 pl-11 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
-                                                placeholder="Apto 101"
+                                                placeholder="Ex: 101 A"
                                             />
                                         </div>
                                     </div>
@@ -321,15 +329,46 @@ const Login = () => {
                                 <div className="relative">
                                     <Lock className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
                                     <input
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         required
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3.5 pl-11 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                        className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3.5 pl-11 pr-12 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
                                         placeholder="••••••••"
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600 focus:outline-none"
+                                    >
+                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    </button>
                                 </div>
                             </div>
+
+                            {isRegister && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Confirmar Senha</label>
+                                    <div className="relative">
+                                        <Lock className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                        <input
+                                            type={showConfirmPassword ? "text" : "password"}
+                                            required={isRegister}
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3.5 pl-11 pr-12 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                            placeholder="••••••••"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-600 focus:outline-none"
+                                        >
+                                            {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="pt-4">
                                 <button
