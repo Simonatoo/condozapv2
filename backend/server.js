@@ -35,7 +35,7 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/categories', require('./routes/categoryRoutes'));
 
-app.use('/health', (req, res) => res.send(200))
+app.use('/health', (req, res) => res.status(200).send('Im online 👍'))
 
 const PORT = process.env.PORT || 5000;
 
