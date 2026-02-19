@@ -28,10 +28,11 @@ exports.createProduct = async (req, res) => {
 
 exports.getProducts = async (req, res) => {
     try {
-        const { user_id, status } = req.query;
+        const { user_id, status, category } = req.query;
         let filter = {};
         if (user_id) filter.user_id = user_id;
         if (status) filter.status = status;
+        if (category) filter.category = category;
 
         const products = await Product.find(filter)
             .sort({ createdAt: -1 })

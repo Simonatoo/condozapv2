@@ -7,6 +7,8 @@ import { Tag, MapPin, DollarSign, Annoyed, Frown, RefreshCcw } from 'lucide-reac
 const Home = () => {
     const { user } = useContext(AuthContext);
     const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState(null);
     const [loading, setLoading] = useState(true);
 
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -21,19 +23,44 @@ const Home = () => {
     }, [selectedProduct]);
 
     useEffect(() => {
-        const fetchProducts = async () => {
+        const fetchInitialData = async () => {
             try {
-                const res = await api.get('/products?status=enabled');
-                setProducts(res.data);
+                setLoading(true);
+                const [productsRes, categoriesRes] = await Promise.all([
+                    api.get('/products?status=enabled'),
+                    api.get('/categories')
+                ]);
+                setProducts(productsRes.data);
+                setCategories(categoriesRes.data);
             } catch (err) {
-                console.error('Error fetching products:', err);
+                console.error('Error fetching data:', err);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchProducts();
+        fetchInitialData();
     }, []);
+
+    const handleCategoryClick = async (categoryId) => {
+        if (selectedCategory === categoryId) {
+            setSelectedCategory(null); // Deselect
+            try {
+                const res = await api.get('/products?status=enabled');
+                setProducts(res.data);
+            } catch (err) {
+                console.error('Error resetting filter:', err);
+            }
+        } else {
+            setSelectedCategory(categoryId); // Select
+            try {
+                const res = await api.get(`/products?status=enabled&category=${categoryId}`);
+                setProducts(res.data);
+            } catch (err) {
+                console.error('Error filtering products:', err);
+            }
+        }
+    };
 
 
 
@@ -59,6 +86,31 @@ const Home = () => {
                 <div className="mb-6">
                     <h1 className="text-xl font-bold text-gray-900">Olá, {user?.name?.split(' ')[0]}! 👋</h1>
                     <p className="text-sm text-gray-600 mt-1">Que bom ter você por aqui. Veja o que seus vizinhos prepararam para hoje.</p>
+                </div>
+
+                {/* Categories Filter */}
+                <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-3 px-3 scrollbar-hide">
+                    <button
+                        onClick={() => handleCategoryClick(null)}
+                        className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedCategory === null
+                                ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                                : 'bg-white text-gray-600 border border-gray-200'
+                            }`}
+                    >
+                        Todos
+                    </button>
+                    {categories.map((cat) => (
+                        <button
+                            key={cat._id}
+                            onClick={() => handleCategoryClick(cat._id)}
+                            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedCategory === cat._id
+                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                                    : 'bg-white text-gray-600 border border-gray-200'
+                                }`}
+                        >
+                            {cat.name}
+                        </button>
+                    ))}
                 </div>
 
                 {/* Feed Header */}
