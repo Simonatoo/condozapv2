@@ -4,6 +4,18 @@ import { AuthContext } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import { Tag, MapPin, DollarSign, Annoyed, Frown, RefreshCcw } from 'lucide-react';
 
+const ProductSkeleton = () => (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden flex flex-col animate-pulse">
+        <div className="h-48 bg-gray-200" />
+        <div className="p-3 flex flex-col flex-1">
+            <div className="mb-2 h-6 bg-gray-200 rounded w-1/2" />
+            <div className="mb-2 h-4 bg-gray-200 rounded w-full" />
+            <div className="mb-4 h-4 bg-gray-200 rounded w-3/4" />
+            <div className="h-3 bg-gray-200 rounded w-1/3" />
+        </div>
+    </div>
+);
+
 const Home = () => {
     const { user } = useContext(AuthContext);
     const [products, setProducts] = useState([]);
@@ -25,6 +37,9 @@ const Home = () => {
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
+                // Only full screen loading on initial mount if wanted, 
+                // but here we want to show skeletons in the grid.
+                // So we can let loading be true, but change how we render it.
                 setLoading(true);
                 const [productsRes, categoriesRes] = await Promise.all([
                     api.get('/products?status=enabled'),
@@ -43,6 +58,7 @@ const Home = () => {
     }, []);
 
     const handleCategoryClick = async (categoryId) => {
+        setLoading(true); // Start loading
         if (selectedCategory === categoryId) {
             setSelectedCategory(null); // Deselect
             try {
@@ -50,6 +66,8 @@ const Home = () => {
                 setProducts(res.data);
             } catch (err) {
                 console.error('Error resetting filter:', err);
+            } finally {
+                setLoading(false); // Stop loading
             }
         } else {
             setSelectedCategory(categoryId); // Select
@@ -58,19 +76,16 @@ const Home = () => {
                 setProducts(res.data);
             } catch (err) {
                 console.error('Error filtering products:', err);
+            } finally {
+                setLoading(false); // Stop loading
             }
         }
     };
 
 
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-        );
-    }
+    // Removed full screen loading to show skeleton grid instead
+    // if (loading) { ... }
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -90,22 +105,13 @@ const Home = () => {
 
                 {/* Categories Filter */}
                 <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-3 px-3 scrollbar-hide">
-                    <button
-                        onClick={() => handleCategoryClick(null)}
-                        className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedCategory === null
-                                ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
-                                : 'bg-white text-gray-600 border border-gray-200'
-                            }`}
-                    >
-                        Todos
-                    </button>
                     {categories.map((cat) => (
                         <button
                             key={cat._id}
                             onClick={() => handleCategoryClick(cat._id)}
                             className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedCategory === cat._id
-                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
-                                    : 'bg-white text-gray-600 border border-gray-200'
+                                ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                                : 'bg-white text-gray-600 border border-gray-200'
                                 }`}
                         >
                             {cat.name}
@@ -120,41 +126,49 @@ const Home = () => {
 
                 {/* Product Feed Grid */}
                 <div className="grid grid-cols-2 gap-3">
-                    {products.map((product) => (
-                        <div
-                            key={product._id}
-                            onClick={() => setSelectedProduct(product)}
-                            className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden active:opacity-90 transition-opacity cursor-pointer flex flex-col"
-                        >
-                            {/* Image */}
-                            <div className="h-50 overflow-hidden bg-gray-100 flex items-center justify-center text-gray-300">
-                                {product.images.length > 0 && (
-                                    <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
-                                )}
-                            </div>
-
-                            <div className="p-3 flex flex-col flex-1">
-                                <div className="mb-1">
-                                    <span className="text-xl font-normal text-gray-900">
-                                        R$ {Math.floor(product.value).toLocaleString('pt-BR')}
-                                    </span>
-                                    {(product.value % 1) > 0 && (
-                                        <span className="text-xs font-normal text-gray-900 align-top relative top-0.5">
-                                            ,{(product.value % 1).toFixed(2).substring(2)}
-                                        </span>
+                    {loading ? (
+                        // Show Skeletons
+                        Array.from({ length: 4 }).map((_, i) => (
+                            <ProductSkeleton key={i} />
+                        ))
+                    ) : (
+                        // Show Products
+                        products.map((product) => (
+                            <div
+                                key={product._id}
+                                onClick={() => setSelectedProduct(product)}
+                                className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden active:opacity-90 transition-opacity cursor-pointer flex flex-col"
+                            >
+                                {/* Image */}
+                                <div className="h-50 overflow-hidden bg-gray-100 flex items-center justify-center text-gray-300">
+                                    {product.images.length > 0 && (
+                                        <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
                                     )}
                                 </div>
 
-                                <h3 className="text-sm text-gray-600 leading-snug line-clamp-2 mb-2 font-regular">
-                                    {product.name}
-                                </h3>
+                                <div className="p-3 flex flex-col flex-1">
+                                    <div className="mb-1">
+                                        <span className="text-xl font-normal text-gray-900">
+                                            R$ {Math.floor(product.value).toLocaleString('pt-BR')}
+                                        </span>
+                                        {(product.value % 1) > 0 && (
+                                            <span className="text-xs font-normal text-gray-900 align-top relative top-0.5">
+                                                ,{(product.value % 1).toFixed(2).substring(2)}
+                                            </span>
+                                        )}
+                                    </div>
 
-                                <p className="text-xs text-gray-500 font-medium">
-                                    Apto {product.user_id?.apartment || 'N/A'}
-                                </p>
+                                    <h3 className="text-sm text-gray-600 leading-snug line-clamp-2 mb-2 font-regular">
+                                        {product.name}
+                                    </h3>
+
+                                    <p className="text-xs text-gray-500 font-medium">
+                                        Apto {product.user_id?.apartment || 'N/A'}
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))
+                    )}
                 </div>
 
                 {products.length === 0 && (
