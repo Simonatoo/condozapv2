@@ -33,6 +33,7 @@ app.use(cors({
 // Define Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
+app.use('/api/categories', require('./routes/categoryRoutes'));
 
 const PORT = process.env.PORT || 5000;
 

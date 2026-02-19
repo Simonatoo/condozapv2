@@ -7,6 +7,7 @@ import ActionSheet from '../components/actionSheet/ActionSheet';
 
 const MyProducts = () => {
     const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const { user } = useContext(AuthContext);
 
@@ -16,7 +17,8 @@ const MyProducts = () => {
     const [formData, setFormData] = useState({
         name: '',
         description: '',
-        value: ''
+        value: '',
+        category: ''
     });
 
     // Split state for easier management
@@ -35,10 +37,14 @@ const MyProducts = () => {
         }
         setLoading(true);
         try {
-            const res = await api.get(`/products?user_id=${user.id}`);
-            setProducts(res.data);
+            const [productsRes, categoriesRes] = await Promise.all([
+                api.get(`/products?user_id=${user.id}`),
+                api.get('/categories')
+            ]);
+            setProducts(productsRes.data);
+            setCategories(categoriesRes.data);
         } catch (err) {
-            console.error('Error fetching my products:', err);
+            console.error('Error fetching data:', err);
         } finally {
             setLoading(false);
         }
@@ -55,7 +61,8 @@ const MyProducts = () => {
 
     const handleAddNew = () => {
         setEditingProduct(null);
-        setFormData({ name: '', description: '', value: '' });
+        setEditingProduct(null);
+        setFormData({ name: '', description: '', value: '', category: '' });
         setIsModalOpen(true);
     };
 
@@ -64,7 +71,8 @@ const MyProducts = () => {
         setFormData({
             name: product.name,
             description: product.description,
-            value: product.value
+            value: product.value,
+            category: product.category?._id || product.category || ''
         });
         setExistingImages(product.images || []);
         setNewImages([]);
@@ -126,6 +134,7 @@ const MyProducts = () => {
                 data.append('name', formData.name);
                 data.append('description', formData.description);
                 data.append('value', formData.value);
+                data.append('category', formData.category);
                 data.append('status', editingProduct.status);
 
                 // Append kept images
@@ -147,6 +156,7 @@ const MyProducts = () => {
                 data.append('name', formData.name);
                 data.append('description', formData.description);
                 data.append('value', formData.value);
+                data.append('category', formData.category);
                 data.append('user_id', user.id);
                 data.append('status', 'enabled');
 
@@ -161,7 +171,8 @@ const MyProducts = () => {
 
             setIsModalOpen(false);
             setEditingProduct(null);
-            setFormData({ name: '', description: '', value: '' });
+            setEditingProduct(null);
+            setFormData({ name: '', description: '', value: '', category: '' });
             setExistingImages([]);
             setNewImages([]);
             setNewImagePreviews([]);
@@ -370,6 +381,29 @@ const MyProducts = () => {
                             </div>
 
                             <div>
+                                <label className="block text-sm font-bold text-gray-900 mb-2">Categoria</label>
+                                <div className="relative">
+                                    <select
+                                        name="category"
+                                        value={formData.category}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="w-full p-4 bg-gray-50 rounded-xl border border-transparent focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-50 outline-none transition-all font-medium text-gray-900 appearance-none"
+                                    >
+                                        <option value="" disabled>Selecione uma categoria</option>
+                                        {categories.map(cat => (
+                                            <option key={cat._id} value={cat._id}>{cat.name}</option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-500">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
                                 <label className="block text-sm font-bold text-gray-900 mb-2">Nome do Produto</label>
                                 <input
                                     name="name"
@@ -417,7 +451,7 @@ const MyProducts = () => {
                                 </button>
                             </div>
                         </form>
-                    </div>
+                    </div >
                 )
             }
         </div >
