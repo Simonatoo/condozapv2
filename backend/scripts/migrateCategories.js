@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const Category = require('../models/Category');
 const Product = require('../models/Product');
-const connectDB = require('../config/db');
 require('dotenv').config();
 
 const migrateCategories = async () => {

@@ -30,6 +30,23 @@ const userSchema = new mongoose.Schema({
     photo: {
         type: String,
         default: ''
+    },
+    points: {
+        type: Number,
+        default: 0
+    },
+    badges: {
+        type: Array,
+        default: ['']
+    },
+    smsVerified: {
+        type: Boolean,
+        default: false
+    },
+    status: {
+        type: String,
+        enum: ['active', 'inactive'],
+        default: 'active'
     }
 }, { timestamps: true });
 
