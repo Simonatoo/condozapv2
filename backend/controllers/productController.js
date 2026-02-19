@@ -37,7 +37,7 @@ exports.getProducts = async (req, res) => {
 
         const products = await Product.find(filter)
             .sort({ createdAt: -1 })
-            .populate('user_id', 'name apartment telefone');
+            .populate('user_id', 'name apartment telefone photo badges smsVerified');
         res.json(products);
     } catch (err) {
         console.error(err.message);

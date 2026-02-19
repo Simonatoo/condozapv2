@@ -2,7 +2,10 @@ import { useEffect, useState, useContext } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
-import { Tag, MapPin, DollarSign, Annoyed, Frown, RefreshCcw } from 'lucide-react';
+import { MapPin, Frown, RefreshCcw, User, Check } from 'lucide-react';
+import Modal from '../components/modal/Modal';
+import BADGE_MAP from '../constants/badgeMap';
+import Verified from '../components/Verified';
 
 const ProductSkeleton = () => (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden flex flex-col animate-pulse">
@@ -21,7 +24,9 @@ const Home = () => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(null);
+    const [selectedBadge, setSelectedBadge] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
 
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [activeImage, setActiveImage] = useState('');
@@ -82,14 +87,16 @@ const Home = () => {
         }
     };
 
-
-
-    // Removed full screen loading to show skeleton grid instead
-    // if (loading) { ... }
+    const handleBadgeClick = (badge) => {
+        const badgeInfo = BADGE_MAP[badge]
+        setSelectedBadge(badgeInfo)
+        setIsBadgeModalOpen(true)
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">
             <Navbar />
+
 
             {/* Banner */}
             <div className='bg-[#E12D53] text-center py-2'>
@@ -162,9 +169,12 @@ const Home = () => {
                                         {product.name}
                                     </h3>
 
-                                    <p className="text-xs text-gray-500 font-medium">
-                                        Apto {product.user_id?.apartment || 'N/A'}
-                                    </p>
+                                    <div className="flex align-middle gap-1.5">
+                                        <span className="text-xs text-gray-500 font-medium">
+                                            Apto {product.user_id?.apartment || 'N/A'}
+                                        </span>
+                                        {product.user_id.smsVerified ? <Verified /> : null}
+                                    </div>
                                 </div>
                             </div>
                         ))
@@ -242,28 +252,45 @@ const Home = () => {
                             </div>
 
                             <div className="border-t border-gray-100 py-4">
+                                <h3 className="font-semibold text-gray-900 mb-2">Descrição</h3>
+                                <p className="text-gray-600 leading-relaxed text-sm whitespace-pre-wrap">
+                                    {selectedProduct.description}
+                                </p>
+                            </div>
+
+                            <div className="border-t border-gray-100 py-4">
                                 <h3 className="font-semibold text-gray-900 mb-2">Vendedor</h3>
                                 <div className="flex items-center">
-                                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold mr-3">
-                                        {selectedProduct.user_id?.name ? selectedProduct.user_id.name.substring(0, 2).toUpperCase() : 'U'}
+                                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold mr-3 overflow-hidden relative">
+                                        {selectedProduct.user_id?.photo ? <img src={selectedProduct.user_id.photo} alt="Photo" className='w-full h-full object-cover' /> : <User size={24} />}
                                     </div>
+
                                     <div>
-                                        <p className="text-sm font-medium text-gray-900">
-                                            {selectedProduct.user_id?.name || 'Usuário'}
-                                        </p>
+                                        <div className='flex items-center gap-1.5'>
+                                            <p className="text-sm font-medium text-gray-900">
+                                                {selectedProduct.user_id?.name || 'Usuário'}
+                                            </p>
+                                            {selectedProduct.user_id?.smsVerified ? <Verified /> : null}
+                                        </div>
                                         <p className="text-xs text-gray-500 flex items-center">
                                             <MapPin size={12} className="mr-1" />
                                             Apto {selectedProduct.user_id?.apartment || 'N/A'}
                                         </p>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div className="border-t border-gray-100 py-4">
-                                <h3 className="font-semibold text-gray-900 mb-2">Descrição</h3>
-                                <p className="text-gray-600 leading-relaxed text-sm whitespace-pre-wrap">
-                                    {selectedProduct.description}
-                                </p>
+                                <div className="flex gap-1 gap-y-2 mt-6 flex-wrap">
+                                    {selectedProduct.user_id?.badges ? selectedProduct.user_id.badges.map((badge, index) => (
+                                        <div className="flex flex-col items-center gap-1">
+                                            <span key={index}
+                                                onClick={() => handleBadgeClick(badge)}
+                                                className="cursor-pointer text-xl p-2 bg-gray-50 border border-gray-200 rounded-full hover:bg-gray-200 transition-colors"
+                                            >
+                                                {BADGE_MAP[badge].icon}
+                                            </span>
+                                            <span className="text-xs text-gray-500">{BADGE_MAP[badge].title}</span>
+                                        </div>
+                                    )) : null}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -288,6 +315,18 @@ const Home = () => {
                     </div>
                 </div>
             )}
+
+            <Modal
+                isOpen={isBadgeModalOpen}
+                onClose={() => setIsBadgeModalOpen(false)}
+                title={`${selectedBadge?.icon} ${selectedBadge?.title ?? "Empty title"}`}
+                size="full"
+            >
+                <div className='flex flex-col items-center justify-center'>
+                    <p className='text-center'>{selectedBadge?.desc ?? "Empty description"}</p>
+                    <span className='text-sm text-gray-600 mt-2'>0.1% das pessoas possuem esta conquista</span>
+                </div>
+            </Modal>
         </div>
     );
 };
