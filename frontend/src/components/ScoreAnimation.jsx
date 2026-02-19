@@ -54,8 +54,11 @@ const ScoreAnimation = ({ targetValue, duration = 1500, trigger }) => { // Incre
 
     return (
         <span
-            className={`font-bold text-blue-500 text-md mt-2 block transform will-change-transform ${isFinished ? 'transition-transform duration-200 ease-in-out' : ''}`}
-            style={{ transform: `scale(${scale})` }}
+            className={`font-bold text-blue-500 text-md mt-2 block transform will-change-transform ${isFinished ? 'transition-transform duration-500' : ''}`}
+            style={{
+                transform: `scale(${scale})`,
+                transitionTimingFunction: isFinished ? 'cubic-bezier(0.34, 2.26, 0.64, 1)' : 'linear' // Custom bounce bezier
+            }}
         >
             + {count} CondoPoints
         </span>
