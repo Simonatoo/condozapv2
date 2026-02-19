@@ -15,6 +15,7 @@ exports.createProduct = async (req, res) => {
             value,
             status,
             user_id,
+            category: req.body.category,
             images
         });
 
@@ -62,7 +63,7 @@ exports.getProductById = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
     try {
-        const { name, description, value, status } = req.body;
+        const { name, description, value, status, category } = req.body;
 
         let product = await Product.findById(req.params.id);
         if (!product) {
@@ -75,6 +76,7 @@ exports.updateProduct = async (req, res) => {
         product.description = description || product.description;
         product.value = value || product.value;
         product.status = status || product.status;
+        product.category = category || product.category;
 
         // Handle images:
         // Only update images if files are uploaded or keptImages is provided.
