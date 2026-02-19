@@ -12,8 +12,11 @@ const migrateUsersPoints = async () => {
 
         const users = await User.find()
         for (const user of users) {
-            user.smsVerified = true;
-            await user.save();
+            const emptyValue = user.badges.find(b => b === "")
+            if (emptyValue !== undefined) {
+                user.badges = user.badges.filter(b => b !== "")
+                await user.save()
+            }
         }
 
         console.log('--- Migração Concluída com Sucesso ---');

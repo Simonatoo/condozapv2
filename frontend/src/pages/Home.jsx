@@ -324,7 +324,6 @@ const Home = () => {
             >
                 <div className='flex flex-col items-center justify-center'>
                     <p className='text-center'>{selectedBadge?.desc ?? "Empty description"}</p>
-                    <span className='text-sm text-gray-600 mt-2'>0.1% das pessoas possuem esta conquista</span>
                 </div>
             </Modal>
         </div>
