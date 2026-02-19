@@ -8,6 +8,8 @@
     "dev:staging": "nodemon server.js",
     "db:up": "docker-compose up -d",
     "db:down": "docker-compose down",
+    "migrate:dev": "cross-env MONGO_URI=mongodb://localhost:27017/condozapv2 node",
+    "migrate:staging": "node",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
