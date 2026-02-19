@@ -279,7 +279,7 @@ const Home = () => {
                                     </div>
                                 </div>
                                 <div className="flex gap-1 gap-y-2 mt-6 flex-wrap">
-                                    {selectedProduct.user_id?.badges ? selectedProduct.user_id.badges.map((badge, index) => (
+                                    {selectedProduct.user_id?.badges ? selectedProduct.user_id.badges.filter(b => BADGE_MAP[b]).map((badge, index) => (
                                         <div className="flex flex-col items-center gap-1">
                                             <span key={index}
                                                 onClick={() => handleBadgeClick(badge)}
