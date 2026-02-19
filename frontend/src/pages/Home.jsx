@@ -4,6 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import { MapPin, Frown, RefreshCcw, User, Check } from 'lucide-react';
 import Modal from '../components/modal/Modal';
+import ScoreAnimation from '../components/ScoreAnimation';
 import BADGE_MAP from '../constants/badgeMap';
 import Verified from '../components/Verified';
 
@@ -324,6 +325,7 @@ const Home = () => {
             >
                 <div className='flex flex-col items-center justify-center'>
                     <p className='text-center'>{selectedBadge?.desc ?? "Empty description"}</p>
+                    {selectedBadge?.points ? <ScoreAnimation duration={1000} targetValue={selectedBadge.points} trigger={isBadgeModalOpen} /> : null}
                 </div>
             </Modal>
         </div>
