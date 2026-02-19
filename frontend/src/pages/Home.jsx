@@ -284,7 +284,7 @@ const Home = () => {
                                         <div className="flex flex-col items-center gap-1">
                                             <span key={index}
                                                 onClick={() => handleBadgeClick(badge)}
-                                                className="cursor-pointer text-xl p-2 bg-gray-50 border border-gray-200 rounded-full hover:bg-gray-200 transition-colors"
+                                                className="cursor-pointer text-xl p-2 bg-gray-50 border border-gray-200 rounded-full hover:bg-gray-200 transition-colors w-12 h-12 flex items-center justify-center"
                                             >
                                                 {BADGE_MAP[badge].icon}
                                             </span>

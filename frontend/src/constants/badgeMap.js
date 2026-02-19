@@ -1,6 +1,6 @@
 const BADGE_MAP = {
     'pioneer': {
-        title: 'Pioneiro',
+        title: 'Pioneiro(a)',
         desc: 'Um entusiasta usuário das primeiras horas do Condozap',
         icon: '🚀',
         points: 50
