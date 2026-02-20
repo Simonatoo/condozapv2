@@ -2,7 +2,7 @@ import { useEffect, useState, useContext } from 'react';
 import api from '../services/api';
 import Navbar from '../components/Navbar';
 import { AuthContext } from '../context/AuthContext';
-import { Package, Plus, X, Camera, Pencil, Trash } from 'lucide-react';
+import { Package, Plus, X, Camera, Pencil, Trash, MoreVertical, CheckCircle } from 'lucide-react';
 import ActionSheet from '../components/actionSheet/ActionSheet';
 
 const MyProducts = () => {
@@ -10,6 +10,9 @@ const MyProducts = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const { user } = useContext(AuthContext);
+
+    // Filter State
+    const [activeFilter, setActiveFilter] = useState('active'); // 'active' | 'sold'
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -80,8 +83,9 @@ const MyProducts = () => {
         setIsModalOpen(true);
     };
 
-    const handleStatusUpdate = async (newStatus) => {
-        if (!statusSheetProduct) return;
+    const handleStatusUpdate = async (newStatus, targetProduct = null) => {
+        const productToUpdate = targetProduct || statusSheetProduct;
+        if (!productToUpdate) return;
         try {
             // Need to send FormData to handle keptImages if needed, or update backend to handle partial JSON updates.
             // Current backend updateProduct expects keptImages in body if we want to keep them, 
@@ -93,12 +97,14 @@ const MyProducts = () => {
 
             const data = {
                 status: newStatus,
-                keptImages: statusSheetProduct.images || []
+                keptImages: productToUpdate.images || []
             };
 
-            await api.put(`/products/${statusSheetProduct._id}`, data);
+            await api.put(`/products/${productToUpdate._id}`, data);
 
-            setStatusSheetProduct(null); // Close sheet
+            if (statusSheetProduct) {
+                setStatusSheetProduct(null); // Close sheet if open
+            }
             fetchMyProducts();
         } catch (err) {
             console.error("Error updating status", err);
@@ -199,46 +205,94 @@ const MyProducts = () => {
 
             <main className="px-4 py-4 space-y-4 pb-24">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-bold text-gray-900">Meus Produtos</h2>
-                    <span className="text-sm text-blue-600 font-medium">{products.length} itens</span>
+                    <span className="text-sm text-blue-600 font-medium">
+                        {products.filter(p => activeFilter === 'active' ? p.status !== 'sold' : p.status === 'sold').length} itens
+                    </span>
+                </div>
+
+                {/* Filter Tabs */}
+                <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+                    <button
+                        onClick={() => setActiveFilter('active')}
+                        className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium border transition-all ${activeFilter === 'active'
+                            ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                            : 'bg-white text-gray-600 border-gray-200'
+                            }`}
+                    >
+                        Produtos ativos
+                    </button>
+                    <button
+                        onClick={() => setActiveFilter('sold')}
+                        className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium border transition-all ${activeFilter === 'sold'
+                            ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                            : 'bg-white text-gray-600 border-gray-200'
+                            }`}
+                    >
+                        Vendidos
+                    </button>
                 </div>
 
                 {/* Product List */}
-                {products.map((product) => (
-                    <div
-                        key={product._id}
-                        onClick={() => setStatusSheetProduct(product)}
-                        className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden active:scale-[0.99] transition-transform duration-100 cursor-pointer"
-                    >
-                        <div className="p-4">
-                            <div className="flex justify-between items-start mb-2">
-                                <h3 className="text-lg font-bold text-gray-900 leading-tight">{product.name}</h3>
-                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide
+                {products
+                    .filter(product => activeFilter === 'active' ? product.status !== 'sold' : product.status === 'sold')
+                    .map((product) => (
+                        <div
+                            key={product._id}
+                            className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-transform duration-100"
+                        >
+                            <div className="p-4">
+                                <div className="flex justify-between items-start mb-2">
+                                    <h3 className="text-lg font-bold text-gray-900 leading-tight">{product.name}</h3>
+                                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide
                   ${product.status === 'enabled' ? 'bg-green-100 text-green-700' :
-                                        product.status === 'sold' ? 'bg-gray-100 text-gray-500 line-through' : 'bg-red-100 text-red-700'}`}>
-                                    {product.status === 'enabled' ? 'Disponível' : product.status === 'sold' ? 'Vendido' : 'Indisponível'}
-                                </span>
-                            </div>
-
-                            {/* Image Display in List */}
-                            {product.images && product.images.length > 0 && (
-                                <div className="mb-3 h-40 rounded-xl overflow-hidden">
-                                    <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                                            product.status === 'sold' ? 'bg-gray-100 text-gray-500 line-through' : 'bg-red-100 text-red-700'}`}>
+                                        {product.status === 'enabled' ? 'Disponível' : product.status === 'sold' ? 'Vendido' : 'Indisponível'}
+                                    </span>
                                 </div>
-                            )}
 
-                            <p className="text-gray-500 text-sm mb-4 line-clamp-2">{product.description}</p>
+                                {/* Image Display in List */}
+                                {product.images && product.images.length > 0 && (
+                                    <div className="mb-3 h-40 rounded-xl overflow-hidden">
+                                        <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                                    </div>
+                                )}
 
-                            <div className="flex items-center justify-between pt-3 border-t border-gray-50">
-                                <div className="flex items-center text-gray-900 font-bold text-lg">
-                                    <span className="text-sm text-gray-500 mr-1">R$</span>
-                                    {product.value.toFixed(2).replace('.', ',')}
+                                <p className="text-gray-500 text-sm mb-4 line-clamp-2">{product.description}</p>
+
+                                <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+                                    <div className="flex items-center text-gray-900 font-bold text-lg">
+                                        <span className="text-sm text-gray-500 mr-1">R$</span>
+                                        {product.value.toFixed(2).replace('.', ',')}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {product.status !== 'sold' && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleStatusUpdate('sold', product);
+                                                }}
+                                                className="px-3 py-1.5 flex items-center gap-1.5 text-sm font-semibold text-green-600 bg-green-100 hover:bg-green-100 hover:text-green-700 rounded-lg transition-colors"
+                                            >
+                                                <CheckCircle size={16} />
+                                                Confirmar venda
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setStatusSheetProduct(product);
+                                            }}
+                                            className="p-1.5 text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                                        >
+                                            <MoreVertical size={20} />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
 
                 {products.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-16 text-gray-400">
