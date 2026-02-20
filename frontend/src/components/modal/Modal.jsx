@@ -19,7 +19,8 @@ const Modal = ({
     children,
     actions = [],
     footer,
-    size = 'md'
+    size = 'md',
+    isDismissible = true
 }) => {
     const [isVisible, setIsVisible] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
@@ -68,7 +69,7 @@ const Modal = ({
             {/* Backdrop */}
             <div
                 className={`fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ease-out ${isAnimating ? 'opacity-100' : 'opacity-0'}`}
-                onClick={onClose}
+                onClick={isDismissible ? onClose : undefined}
                 aria-hidden="true"
             />
 
@@ -89,13 +90,15 @@ const Modal = ({
                     <h3 id="modal-title" className="text-lg font-semibold text-gray-900">
                         {title}
                     </h3>
-                    <button
-                        onClick={onClose}
-                        className="p-2 -mr-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
-                        aria-label="Close modal"
-                    >
-                        <X size={20} />
-                    </button>
+                    {isDismissible && (
+                        <button
+                            onClick={onClose}
+                            className="p-2 -mr-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+                            aria-label="Close modal"
+                        >
+                            <X size={20} />
+                        </button>
+                    )}
                 </div>
 
                 {/* Content - Scrollable */}

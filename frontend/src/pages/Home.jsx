@@ -396,6 +396,7 @@ const Home = () => {
             {/* Reward Modal Queue */}
             <Modal
                 isOpen={isRewardModalOpen && !!rewardInfo}
+                isDismissible={false}
                 onClose={() => {
                     // Prevent closing randomly before checking them all 
                     // or allow closing? Let's just allow it and sync what was seen? 

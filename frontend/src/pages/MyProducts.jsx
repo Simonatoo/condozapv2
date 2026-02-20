@@ -289,6 +289,7 @@ const MyProducts = () => {
             {/* Reward Modal */}
             <Modal
                 isOpen={isRewardModalOpen && !!rewardInfo}
+                isDismissible={false}
                 onClose={() => {
                     setIsRewardModalOpen(false);
                     setRewardQueue([]);
