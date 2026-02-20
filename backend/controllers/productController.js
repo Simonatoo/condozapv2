@@ -35,9 +35,17 @@ exports.getProducts = async (req, res) => {
         if (status) filter.status = status;
         if (category) filter.category = category;
 
-        const products = await Product.find(filter)
-            .sort({ createdAt: -1 })
-            .populate('user_id', 'name apartment telefone photo badges smsVerified');
+        let query = Product.find(filter).sort({ createdAt: -1 });
+
+        const page = parseInt(req.query.page);
+        const limit = parseInt(req.query.limit) || 20;
+
+        if (page) {
+            const skip = (page - 1) * limit;
+            query = query.skip(skip).limit(limit);
+        }
+
+        const products = await query.populate('user_id', 'name apartment telefone photo badges smsVerified');
         res.json(products);
     } catch (err) {
         console.error(err.message);

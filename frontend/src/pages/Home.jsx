@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext, useRef, useCallback } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
@@ -27,7 +27,22 @@ const Home = () => {
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [selectedBadge, setSelectedBadge] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
     const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
+    const observer = useRef();
+
+    const lastProductElementRef = useCallback(node => {
+        if (loading || loadingMore) return;
+        if (observer.current) observer.current.disconnect();
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && hasMore) {
+                setPage(prevPage => prevPage + 1);
+            }
+        });
+        if (node) observer.current.observe(node);
+    }, [loading, loadingMore, hasMore]);
 
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [activeImage, setActiveImage] = useState('');
@@ -48,10 +63,11 @@ const Home = () => {
                 // So we can let loading be true, but change how we render it.
                 setLoading(true);
                 const [productsRes, categoriesRes] = await Promise.all([
-                    api.get('/products?status=enabled'),
+                    api.get('/products?status=enabled&page=1&limit=10'),
                     api.get('/categories')
                 ]);
                 setProducts(productsRes.data);
+                setHasMore(productsRes.data.length === 10);
                 setCategories(categoriesRes.data);
             } catch (err) {
                 console.error('Error fetching data:', err);
@@ -63,28 +79,44 @@ const Home = () => {
         fetchInitialData();
     }, []);
 
+    useEffect(() => {
+        if (page === 1) return; // Handled by initial load or category change
+
+        const fetchMoreProducts = async () => {
+            setLoadingMore(true);
+            try {
+                let url = `/products?status=enabled&page=${page}&limit=10`;
+                if (selectedCategory) url += `&category=${selectedCategory}`;
+                const res = await api.get(url);
+                setProducts(prev => [...prev, ...res.data]);
+                setHasMore(res.data.length === 10);
+            } catch (err) {
+                console.error('Error fetching more products:', err);
+            } finally {
+                setLoadingMore(false);
+            }
+        };
+
+        fetchMoreProducts();
+    }, [page]);
+
     const handleCategoryClick = async (categoryId) => {
         setLoading(true); // Start loading
-        if (selectedCategory === categoryId) {
-            setSelectedCategory(null); // Deselect
-            try {
-                const res = await api.get('/products?status=enabled');
-                setProducts(res.data);
-            } catch (err) {
-                console.error('Error resetting filter:', err);
-            } finally {
-                setLoading(false); // Stop loading
-            }
-        } else {
-            setSelectedCategory(categoryId); // Select
-            try {
-                const res = await api.get(`/products?status=enabled&category=${categoryId}`);
-                setProducts(res.data);
-            } catch (err) {
-                console.error('Error filtering products:', err);
-            } finally {
-                setLoading(false); // Stop loading
-            }
+        setPage(1); // Reset page
+
+        const newCategoryId = selectedCategory === categoryId ? null : categoryId;
+        setSelectedCategory(newCategoryId);
+
+        try {
+            let url = `/products?status=enabled&page=1&limit=10`;
+            if (newCategoryId) url += `&category=${newCategoryId}`;
+            const res = await api.get(url);
+            setProducts(res.data);
+            setHasMore(res.data.length === 10);
+        } catch (err) {
+            console.error('Error filtering products:', err);
+        } finally {
+            setLoading(false); // Stop loading
         }
     };
 
@@ -141,43 +173,55 @@ const Home = () => {
                         ))
                     ) : (
                         // Show Products
-                        products.map((product) => (
-                            <div
-                                key={product._id}
-                                onClick={() => setSelectedProduct(product)}
-                                className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden active:opacity-90 transition-opacity cursor-pointer flex flex-col"
-                            >
-                                {/* Image */}
-                                <div className="h-50 overflow-hidden bg-gray-100 flex items-center justify-center text-gray-300">
-                                    {product.images.length > 0 && (
-                                        <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
-                                    )}
-                                </div>
+                        <>
+                            {products.map((product, index) => {
+                                const isLastProduct = products.length === index + 1;
+                                return (
+                                    <div
+                                        key={product._id}
+                                        ref={isLastProduct ? lastProductElementRef : null}
+                                        onClick={() => setSelectedProduct(product)}
+                                        className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden active:opacity-90 transition-opacity cursor-pointer flex flex-col"
+                                    >
+                                        {/* Image */}
+                                        <div className="h-50 overflow-hidden bg-gray-100 flex items-center justify-center text-gray-300">
+                                            {product.images.length > 0 && (
+                                                <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                                            )}
+                                        </div>
 
-                                <div className="p-3 flex flex-col flex-1">
-                                    <div className="mb-1">
-                                        <span className="text-xl font-normal text-gray-900">
-                                            R$ {Math.floor(product.value).toLocaleString('pt-BR')}
-                                        </span>
-                                        {(product.value % 1) > 0 && (
-                                            <span className="text-xs font-normal text-gray-900 align-top relative top-0.5">
-                                                ,{(product.value % 1).toFixed(2).substring(2)}
-                                            </span>
-                                        )}
+                                        <div className="p-3 flex flex-col flex-1">
+                                            <div className="mb-1">
+                                                <span className="text-xl font-normal text-gray-900">
+                                                    R$ {Math.floor(product.value).toLocaleString('pt-BR')}
+                                                </span>
+                                                {(product.value % 1) > 0 && (
+                                                    <span className="text-xs font-normal text-gray-900 align-top relative top-0.5">
+                                                        ,{(product.value % 1).toFixed(2).substring(2)}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <h3 className="text-sm text-gray-600 leading-snug line-clamp-2 mb-2 font-regular">
+                                                {product.name}
+                                            </h3>
+
+                                            <div className="flex align-middle gap-1.5">
+                                                <span className="text-xs text-gray-500 font-medium">
+                                                    Apto {product.user_id?.apartment || 'N/A'}
+                                                </span>
+                                                {product.user_id.smsVerified ? <Verified /> : null}
+                                            </div>
+                                        </div>
                                     </div>
-
-                                    <h3 className="text-sm text-gray-600 leading-snug line-clamp-2 mb-2 font-regular">
-                                        {product.name}
-                                    </h3>
-
-                                    <div className="flex align-middle gap-1.5">
-                                        <span className="text-xs text-gray-500 font-medium">
-                                            Apto {product.user_id?.apartment || 'N/A'}
-                                        </span>
-                                        {product.user_id.smsVerified ? <Verified /> : null}
-                                    </div>
-                                </div>
-                            </div>
+                                );
+                            })}
+                        </>
+                    )
+                    }
+                    {loadingMore && (
+                        Array.from({ length: 2 }).map((_, i) => (
+                            <ProductSkeleton key={`loading-more-${i}`} />
                         ))
                     )}
                 </div>
