@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const User = require('../models/User');
 
 exports.createProduct = async (req, res) => {
     try {
@@ -20,7 +21,19 @@ exports.createProduct = async (req, res) => {
         });
 
         const product = await newProduct.save();
-        res.json(product);
+
+        let awardedBadge = null;
+        if (user_id) {
+            const user = await User.findById(user_id);
+            if (user && !user.badges.includes('open-doors')) {
+                user.badges.push('open-doors');
+                user.points += 50;
+                await user.save();
+                awardedBadge = 'open-doors';
+            }
+        }
+
+        res.json({ product, awardedBadge });
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ msg: 'Server Error', error: err.message });

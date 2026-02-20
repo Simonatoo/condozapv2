@@ -5,6 +5,8 @@ import { AuthContext } from '../context/AuthContext';
 import { Package, Plus, X, Camera, Pencil, Trash, MoreVertical, CheckCircle, Info } from 'lucide-react';
 import ActionSheet from '../components/actionSheet/ActionSheet';
 import Modal from '../components/modal/Modal';
+import ScoreAnimation from '../components/ScoreAnimation';
+import BADGE_MAP from '../constants/badgeMap';
 
 const MyProducts = () => {
     const [products, setProducts] = useState([]);
@@ -19,6 +21,8 @@ const MyProducts = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isConfirmSaleModalOpen, setIsConfirmSaleModalOpen] = useState(false);
     const [productToSell, setProductToSell] = useState(null);
+    const [rewardInfo, setRewardInfo] = useState(null);
+    const [isRewardModalOpen, setIsRewardModalOpen] = useState(false);
 
     const [editingProduct, setEditingProduct] = useState(null);
     const [formData, setFormData] = useState({
@@ -180,6 +184,11 @@ const MyProducts = () => {
 
                 await api.post('/products', data, {
                     headers: { 'Content-Type': 'multipart/form-data' }
+                }).then((res) => {
+                    if (res.data.awardedBadge) {
+                        setRewardInfo(BADGE_MAP[res.data.awardedBadge]);
+                        setIsRewardModalOpen(true);
+                    }
                 });
             }
 
@@ -222,7 +231,7 @@ const MyProducts = () => {
                 size="md"
             >
                 <div className="flex flex-col items-center text-center">
-                    <p className="text-gray-600 mb-6">
+                    <p className="text-gray-600 mb-6 mt-2">
                         Uma vez confirmado, este anúncio não será mais exibido na página inicial para os seus vizinhos. Você poderá reativá-lo depois se desejar.
                     </p>
                     <div className="flex flex-col w-full gap-2">
@@ -243,6 +252,45 @@ const MyProducts = () => {
                         </button>
                     </div>
                 </div>
+            </Modal>
+
+            {/* Reward Modal */}
+            <Modal
+                isOpen={isRewardModalOpen}
+                onClose={() => {
+                    setIsRewardModalOpen(false);
+                    setRewardInfo(null);
+                }}
+                title="Novo Selo Conquistado!"
+                size="md"
+            >
+                {rewardInfo && (
+                    <div className="flex flex-col items-center justify-center p-4">
+                        <div className="text-6xl mb-4 bg-gray-50 border border-gray-100 w-24 h-24 flex items-center justify-center rounded-full shadow-sm">
+                            {rewardInfo.icon}
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">{rewardInfo.title}</h3>
+                        <p className="text-gray-600 text-center mb-2">
+                            {rewardInfo.desc}
+                        </p>
+
+                        {rewardInfo.points && (
+                            <div className="flex flex-col items-center">
+                                <ScoreAnimation duration={1500} targetValue={rewardInfo.points} trigger={isRewardModalOpen} />
+                            </div>
+                        )}
+
+                        <button
+                            onClick={() => {
+                                setIsRewardModalOpen(false);
+                                setRewardInfo(null);
+                            }}
+                            className="w-full mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition-colors active:scale-[0.98]"
+                        >
+                            Continuar
+                        </button>
+                    </div>
+                )}
             </Modal>
 
             <main className="px-4 py-4 space-y-4 pb-24">
@@ -368,7 +416,7 @@ const MyProducts = () => {
                 <ActionSheet onClose={() => setStatusSheetProduct(null)} options={[
                     {
                         show: statusSheetProduct.status !== 'enabled',
-                        label: "Ativar produto",
+                        label: "Ativar Anúncio",
                         variant: "default",
                         action: () => handleStatusUpdate('enabled')
                     },
@@ -380,14 +428,14 @@ const MyProducts = () => {
                     },
                     {
                         show: true,
-                        label: "Editar Produto",
+                        label: "Editar Anúncio",
                         variant: "default",
                         icon: <Pencil size={18} strokeWidth={2} />,
                         action: () => handleEdit(statusSheetProduct)
                     },
                     {
                         show: true,
-                        label: "Excluir Produto",
+                        label: "Excluir Anúncio",
                         variant: "destructive",
                         icon: <Trash size={18} strokeWidth={2} />,
                         action: () => handleDeleteProduct(statusSheetProduct._id)
@@ -403,7 +451,7 @@ const MyProducts = () => {
                         {/* Header */}
                         <div className="flex items-center justify-between p-4 border-b border-gray-100">
                             <h2 className="text-lg font-bold text-gray-900">
-                                {editingProduct ? 'Editar Produto' : 'Novo Produto'}
+                                {editingProduct ? 'Editar Anúncio' : 'Novo Anúncio'}
                             </h2>
                             <button onClick={() => setIsModalOpen(false)} className="text-gray-500 p-2 rounded-full hover:bg-gray-100">
                                 <X size={24} />
@@ -504,7 +552,7 @@ const MyProducts = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-900 mb-2">Nome do Produto</label>
+                                <label className="block text-sm font-bold text-gray-900 mb-2">Título do Anúncio</label>
                                 <input
                                     name="name"
                                     value={formData.name}
@@ -547,7 +595,7 @@ const MyProducts = () => {
                                     disabled={submitting}
                                     className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
                                 >
-                                    {submitting ? 'Salvando...' : (editingProduct ? 'Salvar Alterações' : 'Anunciar Produto')}
+                                    {submitting ? 'Salvando...' : (editingProduct ? 'Salvar Alterações' : 'Publicar Anúncio')}
                                 </button>
                             </div>
                         </form>

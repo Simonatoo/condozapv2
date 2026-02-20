@@ -1,4 +1,10 @@
 const BADGE_MAP = {
+    'open-doors': {
+        title: 'Portas Abertas',
+        desc: 'Publicou seu primeiro anúncio no Condozap',
+        icon: '🚪',
+        points: 50
+    },
     'pioneer': {
         title: 'Pioneiro(a)',
         desc: 'Um entusiasta usuário das primeiras horas do Condozap',
