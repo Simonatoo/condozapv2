@@ -8,6 +8,27 @@ import Modal from '../components/modal/Modal';
 import ScoreAnimation from '../components/ScoreAnimation';
 import BADGE_MAP from '../constants/badgeMap';
 
+const ProductSkeleton = () => (
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col animate-pulse mb-4">
+        <div className="p-4">
+            <div className="flex justify-between items-start mb-2">
+                <div className="h-6 bg-gray-200 rounded w-1/2" />
+                <div className="h-5 bg-gray-200 rounded-full w-20" />
+            </div>
+            <div className="mb-3 h-40 bg-gray-200 rounded-xl w-full" />
+            <div className="mb-2 h-4 bg-gray-200 rounded w-full" />
+            <div className="mb-4 h-4 bg-gray-200 rounded w-3/4" />
+            <div className="flex justify-between items-center pt-3 border-t border-gray-50 mt-4">
+                <div className="h-6 bg-gray-200 rounded w-1/4" />
+                <div className="flex gap-2">
+                    <div className="h-8 bg-gray-200 rounded-lg w-20" />
+                    <div className="h-8 bg-gray-200 rounded-lg w-8" />
+                </div>
+            </div>
+        </div>
+    </div>
+);
+
 const MyProducts = () => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -208,14 +229,6 @@ const MyProducts = () => {
         }
     };
 
-    if (loading && !products.length && !isModalOpen) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-        );
-    }
-
     return (
         <div className="min-h-screen bg-gray-50">
             <Navbar />
@@ -334,114 +347,123 @@ const MyProducts = () => {
                 </div>
 
                 {/* Product List */}
-                {products
-                    .filter(product => activeFilter === 'active' ? product.status === 'enabled' : product.status === activeFilter)
-                    .map((product) => (
-                        <div
-                            key={product._id}
-                            className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-transform duration-100"
-                        >
-                            <div className="p-4">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className="text-lg font-bold text-gray-900 leading-tight">{product.name}</h3>
-                                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide
+                {loading && !products.length ? (
+                    <div>
+                        {[1, 2, 3].map(n => <ProductSkeleton key={n} />)}
+                    </div>
+                ) : (
+                    products
+                        .filter(product => activeFilter === 'active' ? product.status === 'enabled' : product.status === activeFilter)
+                        .map((product) => (
+                            <div
+                                key={product._id}
+                                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-transform duration-100"
+                            >
+                                <div className="p-4">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h3 className="text-lg font-bold text-gray-900 leading-tight">{product.name}</h3>
+                                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide
                   ${product.status === 'enabled' ? 'bg-green-100 text-green-700' :
-                                            product.status === 'sold' ? 'bg-gray-100 text-gray-500 line-through' : 'bg-red-100 text-red-700'}`}>
-                                        {product.status === 'enabled' ? 'Disponível' : product.status === 'sold' ? 'Vendido' : 'Indisponível'}
-                                    </span>
-                                </div>
-
-                                {/* Image Display in List */}
-                                {product.images && product.images.length > 0 && (
-                                    <div className="mb-3 h-40 rounded-xl overflow-hidden">
-                                        <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                                                product.status === 'sold' ? 'bg-gray-100 text-gray-500 line-through' : 'bg-red-100 text-red-700'}`}>
+                                            {product.status === 'enabled' ? 'Disponível' : product.status === 'sold' ? 'Vendido' : 'Indisponível'}
+                                        </span>
                                     </div>
-                                )}
 
-                                <p className="text-gray-500 text-sm mb-4 line-clamp-2">{product.description}</p>
+                                    {/* Image Display in List */}
+                                    {product.images && product.images.length > 0 && (
+                                        <div className="mb-3 h-40 rounded-xl overflow-hidden">
+                                            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                                        </div>
+                                    )}
 
-                                <div className="flex items-center justify-between pt-3 border-t border-gray-50">
-                                    <div className="flex items-center text-gray-900 font-bold text-lg">
-                                        <span className="text-sm text-gray-500 mr-1">R$</span>
-                                        {product.value.toFixed(2).replace('.', ',')}
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        {product.status !== 'sold' && (
+                                    <p className="text-gray-500 text-sm mb-4 line-clamp-2">{product.description}</p>
+
+                                    <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+                                        <div className="flex items-center text-gray-900 font-bold text-lg">
+                                            <span className="text-sm text-gray-500 mr-1">R$</span>
+                                            {product.value.toFixed(2).replace('.', ',')}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            {product.status !== 'sold' && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setProductToSell(product);
+                                                        setIsConfirmSaleModalOpen(true);
+                                                    }}
+                                                    className="px-3 py-1.5 flex items-center gap-1.5 text-sm font-semibold text-green-600 bg-green-100 hover:bg-green-100 hover:text-green-700 rounded-lg transition-colors"
+                                                >
+                                                    <CheckCircle size={16} />
+                                                    Confirmar venda
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    setProductToSell(product);
-                                                    setIsConfirmSaleModalOpen(true);
+                                                    setStatusSheetProduct(product);
                                                 }}
-                                                className="px-3 py-1.5 flex items-center gap-1.5 text-sm font-semibold text-green-600 bg-green-100 hover:bg-green-100 hover:text-green-700 rounded-lg transition-colors"
+                                                className="p-1.5 text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                                             >
-                                                <CheckCircle size={16} />
-                                                Confirmar venda
+                                                <MoreVertical size={20} />
                                             </button>
-                                        )}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setStatusSheetProduct(product);
-                                            }}
-                                            className="p-1.5 text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                                        >
-                                            <MoreVertical size={20} />
-                                        </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-
-                {products.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-                        <Package size={48} className="mb-4 text-gray-300" />
-                        <p className="text-lg font-medium text-gray-500">Nenhum produto cadastrado</p>
-                        <p className="text-sm">Seus anúncios aparecerão aqui</p>
-                    </div>
+                        ))
                 )}
-            </main>
+
+                {
+                    !loading && products.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                            <Package size={48} className="mb-4 text-gray-300" />
+                            <p className="text-lg font-medium text-gray-500">Nenhum produto cadastrado</p>
+                            <p className="text-sm">Seus anúncios aparecerão aqui</p>
+                        </div>
+                    )
+                }
+            </main >
 
             {/* Floating Action Button */}
-            <button
+            < button
                 onClick={handleAddNew}
                 className="fixed bottom-20 right-4 bg-blue-600 text-white p-4 rounded-full shadow-lg shadow-blue-200 hover:bg-blue-700 transition-colors z-20 active:scale-90"
             >
                 <Plus size={24} strokeWidth={3} />
-            </button>
+            </button >
 
             {/* Status Action Sheet */}
-            {statusSheetProduct && (
-                <ActionSheet onClose={() => setStatusSheetProduct(null)} options={[
-                    {
-                        show: statusSheetProduct.status !== 'enabled',
-                        label: "Ativar Anúncio",
-                        variant: "default",
-                        action: () => handleStatusUpdate('enabled')
-                    },
-                    {
-                        show: statusSheetProduct.status !== 'disabled',
-                        label: "Desativar Anúncio",
-                        variant: "default",
-                        action: () => handleStatusUpdate('disabled')
-                    },
-                    {
-                        show: true,
-                        label: "Editar Anúncio",
-                        variant: "default",
-                        icon: <Pencil size={18} strokeWidth={2} />,
-                        action: () => handleEdit(statusSheetProduct)
-                    },
-                    {
-                        show: true,
-                        label: "Excluir Anúncio",
-                        variant: "destructive",
-                        icon: <Trash size={18} strokeWidth={2} />,
-                        action: () => handleDeleteProduct(statusSheetProduct._id)
-                    }
-                ]} onClickItem={(item) => item.action && item.action()} />
-            )
+            {
+                statusSheetProduct && (
+                    <ActionSheet onClose={() => setStatusSheetProduct(null)} options={[
+                        {
+                            show: statusSheetProduct.status !== 'enabled',
+                            label: "Ativar Anúncio",
+                            variant: "default",
+                            action: () => handleStatusUpdate('enabled')
+                        },
+                        {
+                            show: statusSheetProduct.status !== 'disabled',
+                            label: "Desativar Anúncio",
+                            variant: "default",
+                            action: () => handleStatusUpdate('disabled')
+                        },
+                        {
+                            show: true,
+                            label: "Editar Anúncio",
+                            variant: "default",
+                            icon: <Pencil size={18} strokeWidth={2} />,
+                            action: () => handleEdit(statusSheetProduct)
+                        },
+                        {
+                            show: true,
+                            label: "Excluir Anúncio",
+                            variant: "destructive",
+                            icon: <Trash size={18} strokeWidth={2} />,
+                            action: () => handleDeleteProduct(statusSheetProduct._id)
+                        }
+                    ]} onClickItem={(item) => item.action && item.action()} />
+                )
             }
 
             {/* Full Screen Modal (Edit/Create) */}

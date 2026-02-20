@@ -5,6 +5,12 @@ const BADGE_MAP = {
         icon: '🚪',
         points: 50
     },
+    'local-commerce': {
+        title: 'Comércio Local',
+        desc: 'Anúnciou mais de 10 produtos no Condozap',
+        icon: '🛒',
+        points: 50
+    },
     'pioneer': {
         title: 'Pioneiro(a)',
         desc: 'Um entusiasta usuário das primeiras horas do Condozap',
