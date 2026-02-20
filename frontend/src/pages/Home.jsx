@@ -149,9 +149,9 @@ const Home = () => {
                         <button
                             key={cat._id}
                             onClick={() => handleCategoryClick(cat._id)}
-                            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedCategory === cat._id
+                            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm border font-medium transition-all ${selectedCategory === cat._id
                                 ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
-                                : 'bg-white text-gray-600 border border-gray-200'
+                                : 'bg-white text-gray-600 border-gray-200'
                                 }`}
                         >
                             {cat.name}
