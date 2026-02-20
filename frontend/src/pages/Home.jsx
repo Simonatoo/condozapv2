@@ -124,7 +124,9 @@ const Home = () => {
         setLoading(true); // Start loading
         setPage(1); // Reset page
 
-        const newCategoryId = selectedCategory === categoryId ? null : categoryId;
+        // If clicking 'Todos' (null) or clicking the already selected category, 
+        // set category to null (unfiltered). Otherwise, select new category.
+        const newCategoryId = (categoryId === null || selectedCategory === categoryId) ? null : categoryId;
         setSelectedCategory(newCategoryId);
 
         try {
@@ -165,6 +167,15 @@ const Home = () => {
 
                 {/* Categories Filter */}
                 <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-3 px-3 scrollbar-hide">
+                    <button
+                        onClick={() => handleCategoryClick(null)}
+                        className={`whitespace-nowrap px-4 py-2 rounded-full text-sm border font-medium transition-all ${selectedCategory === null
+                            ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                            : 'bg-white text-gray-600 border-gray-200'
+                            }`}
+                    >
+                        Todos
+                    </button>
                     {categories.map((cat) => (
                         <button
                             key={cat._id}
