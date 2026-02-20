@@ -2,8 +2,9 @@ import { useEffect, useState, useContext } from 'react';
 import api from '../services/api';
 import Navbar from '../components/Navbar';
 import { AuthContext } from '../context/AuthContext';
-import { Package, Plus, X, Camera, Pencil, Trash, MoreVertical, CheckCircle } from 'lucide-react';
+import { Package, Plus, X, Camera, Pencil, Trash, MoreVertical, CheckCircle, Info } from 'lucide-react';
 import ActionSheet from '../components/actionSheet/ActionSheet';
+import Modal from '../components/modal/Modal';
 
 const MyProducts = () => {
     const [products, setProducts] = useState([]);
@@ -16,6 +17,9 @@ const MyProducts = () => {
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isConfirmSaleModalOpen, setIsConfirmSaleModalOpen] = useState(false);
+    const [productToSell, setProductToSell] = useState(null);
+
     const [editingProduct, setEditingProduct] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
@@ -104,6 +108,10 @@ const MyProducts = () => {
 
             if (statusSheetProduct) {
                 setStatusSheetProduct(null); // Close sheet if open
+            }
+            if (isConfirmSaleModalOpen) {
+                setIsConfirmSaleModalOpen(false);
+                setProductToSell(null);
             }
             fetchMyProducts();
         } catch (err) {
@@ -203,10 +211,44 @@ const MyProducts = () => {
         <div className="min-h-screen bg-gray-50">
             <Navbar />
 
+            {/* Confirm Sale Modal */}
+            <Modal
+                isOpen={isConfirmSaleModalOpen}
+                onClose={() => {
+                    setIsConfirmSaleModalOpen(false);
+                    setProductToSell(null);
+                }}
+                title="Confirmar Venda"
+                size="md"
+            >
+                <div className="flex flex-col items-center text-center">
+                    <p className="text-gray-600 mb-6">
+                        Uma vez confirmado, este anúncio não será mais exibido na página inicial para os seus vizinhos. Você poderá reativá-lo depois se desejar.
+                    </p>
+                    <div className="flex flex-col w-full gap-2">
+                        <button
+                            onClick={() => handleStatusUpdate('sold', productToSell)}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition-colors active:scale-[0.98]"
+                        >
+                            Confirmar venda
+                        </button>
+                        <button
+                            onClick={() => {
+                                setIsConfirmSaleModalOpen(false);
+                                setProductToSell(null);
+                            }}
+                            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3.5 px-4 rounded-xl transition-colors active:scale-[0.98]"
+                        >
+                            Ainda não vendi
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
             <main className="px-4 py-4 space-y-4 pb-24">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-bold text-gray-900">Meus Produtos</h2>
+                    <h2 className="text-xl font-bold text-gray-900">Meus Anúncios</h2>
                     <span className="text-sm text-blue-600 font-medium">
                         {products.filter(p => activeFilter === 'active' ? p.status !== 'sold' : p.status === 'sold').length} itens
                     </span>
@@ -221,7 +263,7 @@ const MyProducts = () => {
                             : 'bg-white text-gray-600 border-gray-200'
                             }`}
                     >
-                        Produtos ativos
+                        Ativos
                     </button>
                     <button
                         onClick={() => setActiveFilter('sold')}
@@ -271,7 +313,8 @@ const MyProducts = () => {
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    handleStatusUpdate('sold', product);
+                                                    setProductToSell(product);
+                                                    setIsConfirmSaleModalOpen(true);
                                                 }}
                                                 className="px-3 py-1.5 flex items-center gap-1.5 text-sm font-semibold text-green-600 bg-green-100 hover:bg-green-100 hover:text-green-700 rounded-lg transition-colors"
                                             >

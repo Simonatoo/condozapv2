@@ -99,7 +99,7 @@ const Modal = ({
                 </div>
 
                 {/* Content - Scrollable */}
-                <div className="px-6 py-4 overflow-y-auto custom-scrollbar">
+                <div className="px-4 py-4 overflow-y-auto custom-scrollbar">
                     {children}
                 </div>
 
