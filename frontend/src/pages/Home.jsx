@@ -325,7 +325,7 @@ const Home = () => {
                                 </div>
                                 <div className="flex gap-2 mt-6 flex-wrap">
                                     {selectedProduct.user_id?.badges ? selectedProduct.user_id.badges.filter(b => BADGE_MAP[b]).map((badge, index) => (
-                                        <div className="flex flex-col items-center gap-1">
+                                        <div className="flex flex-col items-center gap-1 w-16 text-center">
                                             <span key={index}
                                                 onClick={() => handleBadgeClick(badge)}
                                                 className="cursor-pointer text-xl p-2 bg-gray-50 border border-gray-200 rounded-full hover:bg-gray-200 transition-colors w-12 h-12 flex items-center justify-center"
