@@ -136,7 +136,9 @@ const MyProducts = () => {
                 keptImages: productToUpdate.images || []
             };
 
-            await api.put(`/products/${productToUpdate._id}`, data);
+            const res = await api.put(`/products/${productToUpdate._id}`, data);
+
+            console.log(res.data);
 
             if (statusSheetProduct) {
                 setStatusSheetProduct(null); // Close sheet if open
@@ -146,6 +148,12 @@ const MyProducts = () => {
                 setProductToSell(null);
             }
             fetchMyProducts();
+
+            if (res.data.awardedBadges && res.data.awardedBadges.length > 0) {
+                setRewardQueue(res.data.awardedBadges);
+                setFullRewardList(res.data.awardedBadges);
+                setIsRewardModalOpen(true);
+            }
         } catch (err) {
             console.error("Error updating status", err);
             alert("Erro ao atualizar status");
@@ -257,7 +265,10 @@ const MyProducts = () => {
                     </p>
                     <div className="flex flex-col w-full gap-2">
                         <button
-                            onClick={() => handleStatusUpdate('sold', productToSell)}
+                            onClick={() => {
+                                handleStatusUpdate('sold', productToSell)
+
+                            }}
                             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition-colors active:scale-[0.98]"
                         >
                             Confirmar venda

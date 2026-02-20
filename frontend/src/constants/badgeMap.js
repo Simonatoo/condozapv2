@@ -1,65 +1,76 @@
 const BADGE_MAP = {
+    'verified': {
+        title: 'Verificado',
+        desc: 'É um morador legítimo do condomínio.',
+        icon: '✅',
+    },
+    'hand-shake': {
+        title: 'Trato feito',
+        desc: 'Transformou um desapego em uma solução para um vizinho.',
+        icon: '🤝',
+        points: 25
+    },
     'open-doors': {
         title: 'Portas Abertas',
-        desc: 'Publicou seu primeiro anúncio no Condozap',
+        desc: 'Publicou seu primeiro anúncio no Condozap.',
         icon: '🚪',
         points: 50
     },
     'local-commerce': {
         title: 'Comércio Local',
-        desc: 'Anúnciou mais de 10 produtos no Condozap',
+        desc: 'Anúnciou mais de 10 produtos no Condozap.',
         icon: '🛒',
         points: 50
     },
     'pioneer': {
         title: 'Pioneiro(a)',
-        desc: 'Um entusiasta usuário das primeiras horas do Condozap',
+        desc: 'Um entusiasta usuário das primeiras horas do Condozap.',
         icon: '🚀',
         points: 50
     },
     'first-product': {
         title: 'Primeiro Anúncio',
-        desc: 'Anunciou seu primeiro item na plataforma',
+        desc: 'Anunciou seu primeiro item na plataforma.',
         icon: '✅'
     },
     'handy-helper': {
         title: 'Mão na Roda',
-        desc: 'Realizou sua primeira venda com ajuda do app',
+        desc: 'Realizou sua primeira venda com ajuda do app.',
         icon: '🤝'
     },
     'detached': {
         title: 'Desapegado',
-        desc: 'Completou a venda de 10 produtos',
+        desc: 'Completou a venda de 10 produtos.',
         icon: '📦'
     },
     'super-seller': {
         title: 'Super Vendedor',
-        desc: 'Completou a venda de 25 produtos',
+        desc: 'Completou a venda de 25 produtos.',
         icon: '🏆'
     },
     'legend': {
         title: 'Lendário',
-        desc: 'Alcançou a marca histórica de 50 produtos vendidos',
+        desc: 'Alcançou a marca histórica de 50 produtos vendidos.',
         icon: '👑'
     },
     'donor': {
         title: 'Doador',
-        desc: 'Fez sua primeira doação para um vizinho',
+        desc: 'Fez sua primeira doação para um vizinho.',
         icon: '🎁'
     },
     'philanthropist': {
         title: 'Filantropo',
-        desc: 'Realizou 5 ou mais doações no condomínio',
+        desc: 'Realizou 5 ou mais doações no condomínio.',
         icon: '💖'
     },
     'community-builder': {
         title: 'Construtor da Comunidade',
-        desc: 'Convidou 10 vizinhos para usar o app',
+        desc: 'Convidou 10 vizinhos para usar o app.',
         icon: '👥'
     },
     'pro-service': {
         title: 'Profissional do Prédio',
-        desc: 'Anunciou um serviço técnico ou habilidade manual',
+        desc: 'Anunciou um serviço técnico ou habilidade manual.',
         icon: '🛠️'
     }
 }

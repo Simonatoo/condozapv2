@@ -155,12 +155,27 @@ exports.updateProduct = async (req, res) => {
             finalImages = [...finalImages, ...newImages];
         }
 
+        let awardedBadges = [];
+
+        // Check if the product was just marked as sold
+        if (status === 'sold' && product.user_id) {
+            const user = await User.findById(product.user_id);
+            if (user && !user.badges.includes('hand-shake')) {
+                user.badges.push('hand-shake');
+                user.points += 25;
+                awardedBadges.push('hand-shake');
+                await user.save();
+            }
+        }
+
         if (shouldUpdateImages) {
             product.images = finalImages;
         }
 
+        product.status = status || product.status;
         await product.save();
-        res.json(product);
+
+        res.json({ product, awardedBadges });
     } catch (err) {
         console.error("Error in updateProduct:", err);
         res.status(500).json({ msg: 'Server Error', error: err.message, stack: err.stack });

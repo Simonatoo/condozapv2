@@ -352,7 +352,7 @@ const Home = () => {
                                             >
                                                 {BADGE_MAP[badge].icon}
                                             </span>
-                                            <span className="text-xs text-gray-500">{BADGE_MAP[badge].title}</span>
+                                            <span className="text-[10px] text-gray-700 font-medium">{BADGE_MAP[badge].title}</span>
                                         </div>
                                     )) : null}
                                 </div>
