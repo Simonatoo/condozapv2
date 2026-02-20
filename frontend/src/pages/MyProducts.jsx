@@ -42,8 +42,14 @@ const MyProducts = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isConfirmSaleModalOpen, setIsConfirmSaleModalOpen] = useState(false);
     const [productToSell, setProductToSell] = useState(null);
-    const [rewardInfo, setRewardInfo] = useState(null);
+
+    // Reward Modal States
+    const [rewardQueue, setRewardQueue] = useState([]);
     const [isRewardModalOpen, setIsRewardModalOpen] = useState(false);
+
+    // Current reward to show
+    const currentRewardId = rewardQueue[0];
+    const rewardInfo = currentRewardId ? BADGE_MAP[currentRewardId] : null;
 
     const [editingProduct, setEditingProduct] = useState(null);
     const [formData, setFormData] = useState({
@@ -206,8 +212,8 @@ const MyProducts = () => {
                 await api.post('/products', data, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 }).then((res) => {
-                    if (res.data.awardedBadge) {
-                        setRewardInfo(BADGE_MAP[res.data.awardedBadge]);
+                    if (res.data.awardedBadges && res.data.awardedBadges.length > 0) {
+                        setRewardQueue(res.data.awardedBadges);
                         setIsRewardModalOpen(true);
                     }
                 });
@@ -269,38 +275,42 @@ const MyProducts = () => {
 
             {/* Reward Modal */}
             <Modal
-                isOpen={isRewardModalOpen}
+                isOpen={isRewardModalOpen && !!rewardInfo}
                 onClose={() => {
                     setIsRewardModalOpen(false);
-                    setRewardInfo(null);
+                    setRewardQueue([]);
                 }}
                 title="Novo Selo Conquistado!"
                 size="md"
             >
                 {rewardInfo && (
-                    <div className="flex flex-col items-center justify-center p-4">
+                    <div className="flex flex-col items-center justify-center p-4 text-center">
                         <div className="text-6xl mb-4 bg-gray-50 border border-gray-100 w-24 h-24 flex items-center justify-center rounded-full shadow-sm">
                             {rewardInfo.icon}
                         </div>
                         <h3 className="text-xl font-bold text-gray-900 mb-2">{rewardInfo.title}</h3>
-                        <p className="text-gray-600 text-center mb-2">
+                        <p className="text-gray-600 mb-2">
                             {rewardInfo.desc}
                         </p>
 
                         {rewardInfo.points && (
                             <div className="flex flex-col items-center">
-                                <ScoreAnimation duration={1500} targetValue={rewardInfo.points} trigger={isRewardModalOpen} />
+                                <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-4">Recompensa</span>
+                                <ScoreAnimation duration={1500} targetValue={rewardInfo.points} trigger={currentRewardId} />
                             </div>
                         )}
 
                         <button
                             onClick={() => {
-                                setIsRewardModalOpen(false);
-                                setRewardInfo(null);
+                                const newQueue = rewardQueue.slice(1);
+                                setRewardQueue(newQueue);
+                                if (newQueue.length === 0) {
+                                    setIsRewardModalOpen(false);
+                                }
                             }}
                             className="w-full mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition-colors active:scale-[0.98]"
                         >
-                            Continuar
+                            {rewardQueue.length > 1 ? 'Próxima Recompensa' : 'Continuar'}
                         </button>
                     </div>
                 )}

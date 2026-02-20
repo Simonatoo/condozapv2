@@ -22,18 +22,32 @@ exports.createProduct = async (req, res) => {
 
         const product = await newProduct.save();
 
-        let awardedBadge = null;
+        let awardedBadges = [];
         if (user_id) {
             const user = await User.findById(user_id);
-            if (user && !user.badges.includes('open-doors')) {
-                user.badges.push('open-doors');
-                user.points += 50;
+
+            if (user) {
+                // Conta no banco de dados quantos produtos o usuário já tem
+                const productCount = await Product.countDocuments({ user_id: user_id });
+
+                if (!user.badges.includes('open-doors')) {
+                    user.badges.push('open-doors');
+                    user.points += 50;
+                    awardedBadges.push('open-doors');
+                }
+
+                // Exemplo: se já for o 10º produto (levando em conta que o product atual acabou de ser salvo e contabilizado no count)
+                if (!user.badges.includes('local-commerce') && productCount >= 10) {
+                    user.badges.push('local-commerce');
+                    user.points += 50;
+                    awardedBadges.push('local-commerce');
+                }
+
                 await user.save();
-                awardedBadge = 'open-doors';
             }
         }
 
-        res.json({ product, awardedBadge });
+        res.json({ product, awardedBadges });
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ msg: 'Server Error', error: err.message });
