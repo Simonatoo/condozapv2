@@ -41,7 +41,7 @@ exports.register = async (req, res) => {
             { expiresIn: 360000 },
             (err, token) => {
                 if (err) throw err;
-                res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, apartment: user.apartment, photo: user.photo } });
+                res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, apartment: user.apartment, photo: user.photo, badges: user.badges, checkedBadges: user.checkedBadges } });
             }
         );
     } catch (err) {
@@ -77,7 +77,7 @@ exports.login = async (req, res) => {
             { expiresIn: 360000 },
             (err, token) => {
                 if (err) throw err;
-                res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, apartment: user.apartment, photo: user.photo } });
+                res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, apartment: user.apartment, photo: user.photo, badges: user.badges, checkedBadges: user.checkedBadges } });
             }
         );
     } catch (err) {
@@ -142,7 +142,7 @@ exports.googleLogin = async (req, res) => {
             { expiresIn: 360000 },
             (err, jwtToken) => {
                 if (err) throw err;
-                res.json({ token: jwtToken, user: { id: user.id, name: user.name, email: user.email, role: user.role, apartment: user.apartment, photo: user.photo } });
+                res.json({ token: jwtToken, user: { id: user.id, name: user.name, email: user.email, role: user.role, apartment: user.apartment, photo: user.photo, badges: user.badges, checkedBadges: user.checkedBadges } });
             }
         );
     } catch (err) {

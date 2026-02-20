@@ -33,6 +33,14 @@ const Home = () => {
     const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
     const observer = useRef();
 
+    // Reward Modal States
+    const [rewardQueue, setRewardQueue] = useState([]);
+    const [isRewardModalOpen, setIsRewardModalOpen] = useState(false);
+
+    // Current reward to show
+    const currentRewardId = rewardQueue[0];
+    const rewardInfo = currentRewardId ? BADGE_MAP[currentRewardId] : null;
+
     const lastProductElementRef = useCallback(node => {
         if (loading || loadingMore) return;
         if (observer.current) observer.current.disconnect();
@@ -54,6 +62,18 @@ const Home = () => {
             setActiveImage('');
         }
     }, [selectedProduct]);
+
+    // Check for unseen badges
+    useEffect(() => {
+        if (user && user.badges && Array.isArray(user.badges)) {
+            const checked = user.checkedBadges || [];
+            const unseen = user.badges.filter(b => b && b !== '' && !checked.includes(b));
+            if (unseen.length > 0) {
+                setRewardQueue(unseen);
+                setIsRewardModalOpen(true);
+            }
+        }
+    }, [user]);
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -371,6 +391,62 @@ const Home = () => {
                     <p className='text-center'>{selectedBadge?.desc ?? "Empty description"}</p>
                     {selectedBadge?.points ? <ScoreAnimation duration={1000} targetValue={selectedBadge.points} trigger={isBadgeModalOpen} /> : null}
                 </div>
+            </Modal>
+
+            {/* Reward Modal Queue */}
+            <Modal
+                isOpen={isRewardModalOpen && !!rewardInfo}
+                onClose={() => {
+                    // Prevent closing randomly before checking them all 
+                    // or allow closing? Let's just allow it and sync what was seen? 
+                    // The user wants a forced acknowledge. Let's keep it open or sync on close.
+                    setIsRewardModalOpen(false);
+                }}
+                title="Novo Selo Conquistado!"
+                size="md"
+            >
+                {rewardInfo && (
+                    <div className="flex flex-col items-center justify-center p-4 text-center">
+                        <div className="text-6xl mb-4 bg-gray-50 border border-gray-100 w-24 h-24 flex items-center justify-center rounded-full shadow-sm">
+                            {rewardInfo.icon}
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">{rewardInfo.title}</h3>
+                        <p className="text-gray-600 mb-2">
+                            {rewardInfo.desc}
+                        </p>
+
+                        {rewardInfo.points && (
+                            <div className="flex flex-col items-center">
+                                <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-4">Recompensa</span>
+                                <ScoreAnimation duration={1500} targetValue={rewardInfo.points} trigger={currentRewardId} />
+                            </div>
+                        )}
+
+                        <button
+                            onClick={async () => {
+                                const newQueue = rewardQueue.slice(1);
+                                setRewardQueue(newQueue);
+
+                                if (newQueue.length === 0) {
+                                    setIsRewardModalOpen(false);
+                                    // Trigger backend sync here using the full list we got on load
+                                    const unseen = user.badges.filter(b => b && b !== '' && !(user.checkedBadges || []).includes(b));
+                                    try {
+                                        const response = await api.put('/users/me/sync-badges', { badgesToSync: unseen });
+                                        // Update local context directly to avoid infinite re-render loop
+                                        user.checkedBadges = response.data.checkedBadges;
+                                        localStorage.setItem('user', JSON.stringify(user));
+                                    } catch (err) {
+                                        console.error("Failed to sync checked badges", err);
+                                    }
+                                }
+                            }}
+                            className="w-full mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition-colors active:scale-[0.98]"
+                        >
+                            {rewardQueue.length > 1 ? 'Próxima Recompensa' : 'Continuar'}
+                        </button>
+                    </div>
+                )}
             </Modal>
         </div>
     );

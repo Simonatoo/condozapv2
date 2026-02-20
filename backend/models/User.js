@@ -39,6 +39,10 @@ const userSchema = new mongoose.Schema({
         type: Array,
         default: ['']
     },
+    checkedBadges: {
+        type: Array,
+        default: []
+    },
     smsVerified: {
         type: Boolean,
         default: false

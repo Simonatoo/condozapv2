@@ -12,8 +12,17 @@ export const AuthProvider = ({ children }) => {
         const userData = localStorage.getItem('user');
         if (token) {
             setUser(userData ? JSON.parse(userData) : { token });
+            // Fetch fresh user data to keep badges up to date
+            api.get('/users/me')
+                .then(res => {
+                    localStorage.setItem('user', JSON.stringify(res.data));
+                    setUser(res.data);
+                })
+                .catch(err => console.error("Error fetching fresh user data", err))
+                .finally(() => setLoading(false));
+        } else {
+            setLoading(false);
         }
-        setLoading(false);
     }, []);
 
     const login = async (email, password) => {

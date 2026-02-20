@@ -45,6 +45,7 @@ const MyProducts = () => {
 
     // Reward Modal States
     const [rewardQueue, setRewardQueue] = useState([]);
+    const [fullRewardList, setFullRewardList] = useState([]);
     const [isRewardModalOpen, setIsRewardModalOpen] = useState(false);
 
     // Current reward to show
@@ -214,6 +215,7 @@ const MyProducts = () => {
                 }).then((res) => {
                     if (res.data.awardedBadges && res.data.awardedBadges.length > 0) {
                         setRewardQueue(res.data.awardedBadges);
+                        setFullRewardList(res.data.awardedBadges);
                         setIsRewardModalOpen(true);
                     }
                 });
@@ -301,11 +303,20 @@ const MyProducts = () => {
                         )}
 
                         <button
-                            onClick={() => {
+                            onClick={async () => {
                                 const newQueue = rewardQueue.slice(1);
                                 setRewardQueue(newQueue);
                                 if (newQueue.length === 0) {
                                     setIsRewardModalOpen(false);
+                                    try {
+                                        const response = await api.put('/users/me/sync-badges', { badgesToSync: fullRewardList });
+                                        // Update context to sync checkedBadges AND the newly acquired badges
+                                        user.checkedBadges = response.data.checkedBadges;
+                                        user.badges = [...new Set([...(user.badges || []), ...fullRewardList])];
+                                        localStorage.setItem('user', JSON.stringify(user));
+                                    } catch (err) {
+                                        console.error("Failed to sync badges in MyProducts", err);
+                                    }
                                 }
                             }}
                             className="w-full mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition-colors active:scale-[0.98]"
