@@ -13,7 +13,7 @@ const MyProducts = () => {
     const { user } = useContext(AuthContext);
 
     // Filter State
-    const [activeFilter, setActiveFilter] = useState('active'); // 'active' | 'sold'
+    const [activeFilter, setActiveFilter] = useState('active'); // 'active' | 'sold' | 'disabled'
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -248,14 +248,14 @@ const MyProducts = () => {
             <main className="px-4 py-4 space-y-4 pb-24">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-bold text-gray-900">Meus Anúncios</h2>
+                    <h1 className="text-xl font-bold text-gray-900">Meus Anúncios</h1>
                     <span className="text-sm text-blue-600 font-medium">
-                        {products.filter(p => activeFilter === 'active' ? p.status !== 'sold' : p.status === 'sold').length} itens
+                        {products.filter(p => activeFilter === 'active' ? p.status === 'enabled' : p.status === activeFilter).length} itens
                     </span>
                 </div>
 
                 {/* Filter Tabs */}
-                <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+                <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
                     <button
                         onClick={() => setActiveFilter('active')}
                         className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium border transition-all ${activeFilter === 'active'
@@ -274,11 +274,20 @@ const MyProducts = () => {
                     >
                         Vendidos
                     </button>
+                    <button
+                        onClick={() => setActiveFilter('disabled')}
+                        className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium border transition-all ${activeFilter === 'disabled'
+                            ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                            : 'bg-white text-gray-600 border-gray-200'
+                            }`}
+                    >
+                        Desativados
+                    </button>
                 </div>
 
                 {/* Product List */}
                 {products
-                    .filter(product => activeFilter === 'active' ? product.status !== 'sold' : product.status === 'sold')
+                    .filter(product => activeFilter === 'active' ? product.status === 'enabled' : product.status === activeFilter)
                     .map((product) => (
                         <div
                             key={product._id}
@@ -362,12 +371,6 @@ const MyProducts = () => {
                         label: "Ativar produto",
                         variant: "default",
                         action: () => handleStatusUpdate('enabled')
-                    },
-                    {
-                        show: statusSheetProduct.status !== 'sold',
-                        label: "Marcar como Vendido",
-                        variant: "default",
-                        action: () => handleStatusUpdate('sold')
                     },
                     {
                         show: statusSheetProduct.status !== 'disabled',
