@@ -14,7 +14,9 @@ app.use(express.json({ extended: false }));
 const allowedOrigins = [
     'http://localhost:5173',
     'https://condozapv2.vercel.app',
-    'https://condozap-vqsd.onrender.com'
+    'https://condozap-vqsd.onrender.com',
+    'https://condozap.app',
+    'https://www.condozap.app'
 ];
 
 app.use(cors({
