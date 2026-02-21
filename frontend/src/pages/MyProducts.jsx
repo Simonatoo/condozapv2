@@ -138,8 +138,6 @@ const MyProducts = () => {
 
             const res = await api.put(`/products/${productToUpdate._id}`, data);
 
-            console.log(res.data);
-
             if (statusSheetProduct) {
                 setStatusSheetProduct(null); // Close sheet if open
             }
