@@ -1,10 +1,11 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
-import { Phone, LogOut, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Phone, LogOut, ChevronRight, CheckCircle2, RefreshCw } from 'lucide-react';
 
 const Settings = () => {
-    const { user, logout } = useContext(AuthContext);
+    const { user, logout, refreshUser } = useContext(AuthContext);
+    const [isUpdating, setIsUpdating] = useState(false);
 
     const handleVerifyNumber = () => {
         if (!user || user.smsVerified) return;
@@ -12,6 +13,19 @@ const Settings = () => {
         const userIdPart = user.id ? user.id.slice(-5) : '';
         const message = encodeURIComponent(`Olá, eu sou ${user.name}, quero validar meu telefone. Meu código é ${userIdPart}.`);
         window.open(`https://wa.me/5511967665711?text=${message}`, '_blank');
+    };
+
+    const handleUpdateApp = async () => {
+        setIsUpdating(true);
+        try {
+            if (refreshUser) {
+                await refreshUser();
+            }
+            window.location.reload(true);
+        } catch (error) {
+            console.error('Erro ao atualizar app:', error);
+            setIsUpdating(false);
+        }
     };
 
     return (
@@ -45,6 +59,23 @@ const Settings = () => {
                                     <span className="text-xs text-orange-500 mt-0.5">Não verificado</span>
                                 )}
                             </div>
+                        </div>
+                        <ChevronRight size={20} className="text-gray-400" />
+                    </button>
+
+                    {/* Atualizar Aplicativo */}
+                    <button
+                        onClick={handleUpdateApp}
+                        disabled={isUpdating}
+                        className="w-full flex items-center justify-between px-4 py-4 bg-white active:bg-gray-50 transition-colors border-b border-gray-100 disabled:opacity-70"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
+                                <RefreshCw size={18} className={`text-blue-600 ${isUpdating ? 'animate-spin' : ''}`} />
+                            </div>
+                            <span className="text-gray-900 font-medium text-base">
+                                {isUpdating ? 'Atualizando...' : 'Atualizar aplicativo'}
+                            </span>
                         </div>
                         <ChevronRight size={20} className="text-gray-400" />
                     </button>

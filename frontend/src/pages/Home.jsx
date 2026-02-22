@@ -239,11 +239,11 @@ const Home = () => {
 
                                             <div className="flex align-middle items-center gap-1.5 mt-1">
                                                 {user?.smsVerified ? (
-                                                    <span className="text-xs text-gray-500 font-medium">
+                                                    <span className="text-xs text-gray-500 font-medium flex items-center gap-1">
                                                         Apto {product.user_id?.apartment || 'N/A'}
+                                                        {product.user_id.smsVerified ? <Verified /> : null}
                                                     </span>
                                                 ) : null}
-                                                {product.user_id.smsVerified ? <Verified /> : null}
                                             </div>
                                         </div>
                                     </div>

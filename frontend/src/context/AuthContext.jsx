@@ -8,22 +8,33 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        refreshUser();
+    }, []);
+
+    const refreshUser = async () => {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
+
         if (token) {
-            setUser(userData ? JSON.parse(userData) : { token });
-            // Fetch fresh user data to keep badges up to date
-            api.get('/users/me')
-                .then(res => {
-                    localStorage.setItem('user', JSON.stringify(res.data));
-                    setUser(res.data);
-                })
-                .catch(err => console.error("Error fetching fresh user data", err))
-                .finally(() => setLoading(false));
+            // Seel only if there's no user yet to avoid flicker
+            if (!user) {
+                setUser(userData ? JSON.parse(userData) : { token });
+            }
+
+            try {
+                const res = await api.get('/users/me');
+                localStorage.setItem('user', JSON.stringify(res.data));
+                setUser(res.data);
+                return res.data;
+            } catch (err) {
+                console.error("Error fetching fresh user data", err);
+            } finally {
+                setLoading(false);
+            }
         } else {
             setLoading(false);
         }
-    }, []);
+    };
 
     const login = async (email, password) => {
         const res = await api.post('/auth/login', { email, password });
@@ -80,7 +91,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout, register, googleLogin }}>
+        <AuthContext.Provider value={{ user, loading, login, logout, register, googleLogin, refreshUser }}>
             {children}
         </AuthContext.Provider>
     );
