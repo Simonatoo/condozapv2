@@ -17,7 +17,8 @@ const Login = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [name, setName] = useState('');
     const [telefone, setTelefone] = useState('');
-    const [apartment, setApartment] = useState('');
+    const [apartmentNum, setApartmentNum] = useState('');
+    const [apartmentBlock, setApartmentBlock] = useState('');
 
     const { login, register, googleLogin } = useContext(AuthContext);
     const navigate = useNavigate();
@@ -51,6 +52,7 @@ const Login = () => {
                     setLoading(false);
                     return;
                 }
+                const apartment = `${apartmentNum} ${apartmentBlock}`.trim();
                 await register({ name, email, password, telefone, apartment });
             } else {
                 await login(email, password);
@@ -87,7 +89,8 @@ const Login = () => {
 
     const handleGoogleRegister = async (e) => {
         e.preventDefault();
-        if (!apartment || !telefone) {
+        const apartment = `${apartmentNum} ${apartmentBlock}`.trim();
+        if (!apartmentNum || !telefone) {
             setError('Por favor, informe todos os campos obrigatórios');
             return;
         }
@@ -142,17 +145,30 @@ const Login = () => {
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Apartamento e Bloco</label>
-                            <div className="relative">
-                                <Home className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                        <div className="flex gap-3">
+                            <div className="flex-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Apartamento</label>
+                                <div className="relative">
+                                    <Home className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        required
+                                        value={apartmentNum}
+                                        onChange={(e) => setApartmentNum(e.target.value.replace(/\D/g, ''))}
+                                        className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3.5 pl-11 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                        placeholder="Ex: 101"
+                                    />
+                                </div>
+                            </div>
+                            <div className="w-[30%]">
+                                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Bloco</label>
                                 <input
                                     type="text"
-                                    required
-                                    value={apartment}
-                                    onChange={(e) => setApartment(e.target.value)}
-                                    className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3.5 pl-11 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
-                                    placeholder="Ex: Apto 101 A"
+                                    maxLength={2}
+                                    value={apartmentBlock}
+                                    onChange={(e) => setApartmentBlock(e.target.value)}
+                                    className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3.5 px-4 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                    placeholder="Ex: A"
                                 />
                             </div>
                         </div>
@@ -295,17 +311,30 @@ const Login = () => {
                                         </p>
                                     </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Apartamento e Bloco</label>
-                                        <div className="relative">
-                                            <Home className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                    <div className="flex gap-3">
+                                        <div className="flex-1">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Apartamento</label>
+                                            <div className="relative">
+                                                <Home className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                                <input
+                                                    type="text"
+                                                    required={isRegister}
+                                                    value={apartmentNum}
+                                                    onChange={(e) => setApartmentNum(e.target.value.replace(/\D/g, ''))}
+                                                    className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3.5 pl-11 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                                    placeholder="Ex: 101"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="w-[30%]">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Bloco</label>
                                             <input
                                                 type="text"
-                                                required={isRegister}
-                                                value={apartment}
-                                                onChange={(e) => setApartment(e.target.value)}
-                                                className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3.5 pl-11 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
-                                                placeholder="Ex: 101 A"
+                                                maxLength={2}
+                                                value={apartmentBlock}
+                                                onChange={(e) => setApartmentBlock(e.target.value)}
+                                                className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3.5 px-4 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                                placeholder="Ex: A"
                                             />
                                         </div>
                                     </div>
