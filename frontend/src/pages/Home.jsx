@@ -2,7 +2,7 @@ import { useEffect, useState, useContext, useRef, useCallback } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
-import { MapPin, Frown, RefreshCcw, User, Check } from 'lucide-react';
+import { MapPin, Frown, RefreshCcw, User, Check, Shield } from 'lucide-react';
 import Modal from '../components/modal/Modal';
 import ScoreAnimation from '../components/ScoreAnimation';
 import BADGE_MAP from '../constants/badgeMap';
@@ -237,10 +237,12 @@ const Home = () => {
                                                 {product.name}
                                             </h3>
 
-                                            <div className="flex align-middle gap-1.5">
-                                                <span className="text-xs text-gray-500 font-medium">
-                                                    Apto {product.user_id?.apartment || 'N/A'}
-                                                </span>
+                                            <div className="flex align-middle items-center gap-1.5 mt-1">
+                                                {user?.smsVerified ? (
+                                                    <span className="text-xs text-gray-500 font-medium">
+                                                        Apto {product.user_id?.apartment || 'N/A'}
+                                                    </span>
+                                                ) : null}
                                                 {product.user_id.smsVerified ? <Verified /> : null}
                                             </div>
                                         </div>
@@ -348,10 +350,19 @@ const Home = () => {
                                             </p>
                                             {selectedProduct.user_id?.smsVerified ? <Verified /> : null}
                                         </div>
-                                        <p className="text-xs text-gray-500 flex items-center">
-                                            <MapPin size={12} className="mr-1" />
-                                            Apto {selectedProduct.user_id?.apartment || 'N/A'}
-                                        </p>
+                                        <div className="mt-1">
+                                            {user?.smsVerified ? (
+                                                <p className="text-xs text-gray-500 flex items-center">
+                                                    <MapPin size={12} className="mr-1" />
+                                                    Apto {selectedProduct.user_id?.apartment || 'N/A'}
+                                                </p>
+                                            ) : (
+                                                <span className="text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full inline-flex items-center mt-0.5">
+                                                    <Shield size={14} className="mr-1" />
+                                                    Aguardando verificação de telefone
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="flex gap-2 mt-6 flex-wrap">

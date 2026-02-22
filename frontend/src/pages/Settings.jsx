@@ -7,8 +7,11 @@ const Settings = () => {
     const { user, logout } = useContext(AuthContext);
 
     const handleVerifyNumber = () => {
-        // Placeholder para o fluxo de verificação
-        alert("Em breve: Fluxo de verificação de número.");
+        if (!user || user.smsVerified) return;
+
+        const userIdPart = user.id ? user.id.slice(-5) : '';
+        const message = encodeURIComponent(`Olá, eu sou ${user.name}, quero validar meu telefone. Meu código é ${userIdPart}.`);
+        window.open(`https://wa.me/5511967665711?text=${message}`, '_blank');
     };
 
     return (
