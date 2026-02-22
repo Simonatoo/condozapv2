@@ -374,14 +374,20 @@ const Home = () => {
                     {/* Bottom Action Bar */}
                     <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 pb-8">
                         <button
-                            onClick={() => {
+                            onClick={async () => {
                                 if (!selectedProduct.user_id?.telefone) {
                                     alert('Telefone do vendedor não disponível.');
                                     return;
                                 }
-                                const cleanPhone = selectedProduct.user_id.telefone.replace(/\D/g, '');
-                                const message = encodeURIComponent(`Olá! Encontrei seu produto ${selectedProduct.name} no Condozap e tenho interesse. Ele ainda está disponível?`);
-                                window.open(`https://wa.me/55${cleanPhone}?text=${message}`, '_blank');
+
+                                try {
+                                    await api.get('/users/me/can-contact');
+                                    const cleanPhone = selectedProduct.user_id.telefone.replace(/\D/g, '');
+                                    const message = encodeURIComponent(`Olá! Encontrei seu produto ${selectedProduct.name} no Condozap e tenho interesse. Ele ainda está disponível?`);
+                                    window.open(`https://wa.me/55${cleanPhone}?text=${message}`, '_blank');
+                                } catch (err) {
+                                    alert(err.response?.data?.msg || 'Erro ao verificar permissão');
+                                }
                             }}
                             className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-3.5 rounded-full font-medium text-md shadow-lg shadow-green-100 transition-all active:scale-[0.98] flex items-center justify-center"
                         >

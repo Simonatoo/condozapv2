@@ -13,4 +13,9 @@ router.get('/me', auth, userController.getMe);
 // @access  Private
 router.put('/me/sync-badges', auth, userController.syncBadges);
 
+// @route   GET api/users/me/can-contact
+// @desc    Check if user is allowed to contact
+// @access  Private
+router.get('/me/can-contact', auth, userController.canContact);
+
 module.exports = router;

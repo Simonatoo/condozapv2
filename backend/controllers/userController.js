@@ -67,3 +67,23 @@ exports.syncBadges = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
+// @route   GET /api/users/me/can-contact
+// @desc    Check if current user is allowed to contact via whatsapp
+exports.canContact = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        if (!user.smsVerified) {
+            return res.status(403).json({ msg: 'Você precisa ter seu telefone verificado para contatar vendedores.' });
+        }
+
+        res.json({ canContact: true });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
