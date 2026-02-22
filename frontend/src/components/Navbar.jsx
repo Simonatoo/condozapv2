@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, LogOut, User, Package } from 'lucide-react';
+import { Home, LogOut, User, Package, Settings as SettingsIcon } from 'lucide-react';
 
 const Navbar = () => {
     const { logout, user } = useContext(AuthContext);
@@ -49,13 +49,13 @@ const Navbar = () => {
                     <span className="text-[10px] font-medium">Meus Produtos</span>
                 </button>
 
-                {/* <button
-                    className={`flex flex-col items-center justify-center w-full h-full space-y-1 text-gray-400 cursor-not-allowed`}
-                // Placeholder for Profile or other tabs
+                <button
+                    onClick={() => navigate('/settings')}
+                    className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive('/settings') ? 'text-blue-600' : 'text-gray-400'}`}
                 >
-                    <User size={24} strokeWidth={2} />
-                    <span className="text-[10px] font-medium">Perfil</span>
-                </button> */}
+                    <SettingsIcon size={24} strokeWidth={isActive('/settings') ? 2.5 : 2} />
+                    <span className="text-[10px] font-medium">Configurações</span>
+                </button>
             </div>
 
             {/* Spacer for Bottom Nav */}
