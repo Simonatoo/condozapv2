@@ -26,7 +26,7 @@ const Navbar = () => {
             <div className="fixed top-0 left-0 right-0 bg-white shadow-sm z-10 h-14 flex items-center justify-center px-4">
                 {user && (
                     <div className='flex items-center gap-4 absolute right-4'>
-                        <Bell size={22} className='text-neutral-400' />
+                        {/* <Bell size={22} className='text-neutral-400' /> */}
                         <div className='border border-gray-200 bg-gray-100 w-10 h-10 rounded-full overflow-hidden flex items-center justify-center'>
                             {user.photo ? <img src={user.photo} alt={user.name} className="w-full h-full object-cover" /> : <User size={18} />}
                         </div>
