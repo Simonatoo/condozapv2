@@ -5,7 +5,7 @@ const Condominium = require('../models/Condominium');
 // @desc    Get current user data
 exports.getMe = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select('-password').populate('condominium', 'name');
+        const user = await User.findById(req.user.id).select('-password').populate('condominiums', 'name');
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });
         }
@@ -21,7 +21,7 @@ exports.getMe = async (req, res) => {
             telefone: user.telefone,
             smsVerified: user.smsVerified,
             points: user.points,
-            condominium: user.condominium
+            condominiums: user.condominiums
         });
     } catch (err) {
         console.error(err.message);

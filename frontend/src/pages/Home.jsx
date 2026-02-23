@@ -234,8 +234,8 @@ const Home = () => {
                                             <div className="flex align-middle items-center gap-1.5 mt-1">
                                                 {user?.smsVerified ? (
                                                     <span className="text-xs text-gray-500 font-medium flex items-center gap-1">
-                                                        Apto {product.user_id?.apartment || 'N/A'}
-                                                        {product.user_id.smsVerified ? <Verified /> : null}
+                                                        Morador(a)
+                                                        {product.user_id?.smsVerified ? <Verified /> : null}
                                                     </span>
                                                 ) : null}
                                             </div>
@@ -348,7 +348,7 @@ const Home = () => {
                                             {user?.smsVerified ? (
                                                 <p className="text-xs text-gray-500 flex items-center">
                                                     <MapPin size={12} className="mr-1" />
-                                                    Apto {selectedProduct.user_id?.apartment || 'N/A'}
+                                                    Morador(a) do seu condomínio
                                                 </p>
                                             ) : (
                                                 <span className="text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full inline-flex items-center mt-0.5">
@@ -380,18 +380,18 @@ const Home = () => {
                     <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 pb-8">
                         <button
                             onClick={async () => {
-                                if (!selectedProduct.user_id?.telefone) {
-                                    alert('Telefone do vendedor não disponível.');
-                                    return;
-                                }
-
                                 try {
-                                    await api.get('/users/me/can-contact');
-                                    const cleanPhone = selectedProduct.user_id.telefone.replace(/\D/g, '');
-                                    const message = encodeURIComponent(`Olá! Encontrei seu produto ${selectedProduct.name} no Condozap e tenho interesse. Ele ainda está disponível?`);
-                                    window.open(`https://wa.me/55${cleanPhone}?text=${message}`, '_blank');
+                                    const { data } = await api.get(`/products/${selectedProduct._id}/contact`);
+
+                                    if (data.telefone) {
+                                        const cleanPhone = data.telefone.replace(/\D/g, '');
+                                        const message = encodeURIComponent(`Olá! Encontrei seu produto ${selectedProduct.name} no Condozap e tenho interesse. Ele ainda está disponível?`);
+                                        window.open(`https://wa.me/55${cleanPhone}?text=${message}`, '_blank');
+                                    } else {
+                                        alert('Número de telefone não encontrado.');
+                                    }
                                 } catch (err) {
-                                    alert(err.response?.data?.msg || 'Erro ao verificar permissão');
+                                    alert(err.response?.data?.msg || 'Erro ao conectar-se com o vendedor.');
                                 }
                             }}
                             className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-3.5 rounded-full font-medium text-md shadow-lg shadow-green-100 transition-all active:scale-[0.98] flex items-center justify-center"

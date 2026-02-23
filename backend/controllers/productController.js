@@ -95,8 +95,9 @@ exports.getProducts = async (req, res) => {
             query = query.skip(skip).limit(limit);
         }
 
-        const products = await query.populate('user_id', 'name apartment telefone photo badges smsVerified')
-            .populate('condominiums', 'name');
+        // Ensure we don't return sensitive data like phone numbers
+        const products = await query.populate('user_id', 'name photo badges smsVerified')
+            .select('-condominiums -__v -updatedAt');
         res.json(products);
     } catch (err) {
         console.error(err.message);
@@ -106,7 +107,10 @@ exports.getProducts = async (req, res) => {
 
 exports.getProductById = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id).populate('condominiums', 'name');
+        // Remove sensitive fields from the default populate
+        const product = await Product.findById(req.params.id)
+            .populate('user_id', 'name photo badges smsVerified')
+            .select('-condominiums -__v -updatedAt');
         if (!product) {
             return res.status(404).json({ msg: 'Product not found' });
         }
@@ -276,5 +280,37 @@ exports.getCondominiumStats = async (req, res) => {
     } catch (err) {
         console.error("Error in getCondominiumStats:", err);
         res.status(500).json({ msg: 'Server Error', error: err.message });
+    }
+};
+
+// @route   GET /api/products/:id/contact
+// @desc    Get the seller's phone number securely 
+exports.getProductContact = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id).populate('user_id', 'telefone smsVerified');
+        if (!product) {
+            return res.status(404).json({ msg: 'Product not found' });
+        }
+
+        const currentUser = await User.findById(req.user.id);
+        if (!currentUser) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        if (!currentUser.smsVerified) {
+            return res.status(403).json({ msg: 'Você precisa ter seu telefone verificado para contatar vendedores.' });
+        }
+
+        if (!product.user_id || !product.user_id.telefone) {
+            return res.status(404).json({ msg: 'Telefone do vendedor não disponível.' });
+        }
+
+        res.json({ telefone: product.user_id.telefone });
+    } catch (err) {
+        console.error(err.message);
+        if (err.kind === 'ObjectId') {
+            return res.status(404).json({ msg: 'Product not found' });
+        }
+        res.status(500).send('Server Error');
     }
 };

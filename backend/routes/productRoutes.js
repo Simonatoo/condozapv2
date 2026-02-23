@@ -19,6 +19,11 @@ router.get('/stats/condominium', productController.getCondominiumStats);
 // @access  Public
 router.get('/:id', productController.getProductById);
 
+// @route   GET api/products/:id/contact
+// @desc    Get seller's phone number securely
+// @access  Private
+router.get('/:id/contact', auth, productController.getProductContact);
+
 // @route   POST api/products
 // @desc    Create a product
 // @access  Private
