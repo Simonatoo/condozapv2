@@ -97,7 +97,8 @@ exports.getProducts = async (req, res) => {
 
         // Ensure we don't return sensitive data like phone numbers
         const products = await query.populate('user_id', 'name photo badges smsVerified')
-            .select('-condominiums -__v -updatedAt');
+            .populate('condominiums', 'name')
+            .select('-__v -updatedAt');
         res.json(products);
     } catch (err) {
         console.error(err.message);
@@ -110,7 +111,8 @@ exports.getProductById = async (req, res) => {
         // Remove sensitive fields from the default populate
         const product = await Product.findById(req.params.id)
             .populate('user_id', 'name photo badges smsVerified')
-            .select('-condominiums -__v -updatedAt');
+            .populate('condominiums', 'name')
+            .select('-__v -updatedAt');
         if (!product) {
             return res.status(404).json({ msg: 'Product not found' });
         }

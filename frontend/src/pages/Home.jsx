@@ -234,7 +234,7 @@ const Home = () => {
                                             <div className="flex align-middle items-center gap-1.5 mt-1">
                                                 {user?.smsVerified ? (
                                                     <span className="text-xs text-gray-500 font-medium flex items-center gap-1">
-                                                        Morador(a)
+                                                        {product.user_id?.name}
                                                         {product.user_id?.smsVerified ? <Verified /> : null}
                                                     </span>
                                                 ) : null}
@@ -348,7 +348,7 @@ const Home = () => {
                                             {user?.smsVerified ? (
                                                 <p className="text-xs text-gray-500 flex items-center">
                                                     <MapPin size={12} className="mr-1" />
-                                                    Morador(a) do seu condomínio
+                                                    {selectedProduct.condominiums[0].name}
                                                 </p>
                                             ) : (
                                                 <span className="text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full inline-flex items-center mt-0.5">
