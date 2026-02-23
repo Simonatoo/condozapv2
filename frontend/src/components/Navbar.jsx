@@ -1,7 +1,8 @@
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, LogOut, User, Package, Settings as SettingsIcon, Building2 } from 'lucide-react';
+import { Home, LogOut, User, Package, Settings as SettingsIcon, Building2, BellRing, Bell } from 'lucide-react';
+import logoText from '../../public/assets/logo-color.svg';
 
 const Navbar = () => {
     const { logout, user } = useContext(AuthContext);
@@ -12,58 +13,51 @@ const Navbar = () => {
 
     const isActive = (path) => location.pathname === path;
 
+    const navItems = [
+        { path: '/', label: 'Início', icon: Home },
+        { path: '/my-products', label: 'Meus Produtos', icon: Package },
+        { path: '/my-condo', label: 'Impacto', icon: Building2 },
+        { path: '/settings', label: 'Configurações', icon: SettingsIcon },
+    ];
+
     return (
         <>
             {/* Top Bar */}
             <div className="fixed top-0 left-0 right-0 bg-white shadow-sm z-10 h-14 flex items-center justify-center px-4">
                 {user && (
-                    <div className="absolute left-4">
+                    <div className='flex items-center gap-4 absolute right-4'>
+                        <Bell size={22} className='text-neutral-400' />
                         <div className='border border-gray-200 bg-gray-100 w-10 h-10 rounded-full overflow-hidden flex items-center justify-center'>
-                            {user.photo ? <img src={user.photo} alt={user.name} className="w-full h-full" /> : <User size={18} />}
+                            {user.photo ? <img src={user.photo} alt={user.name} className="w-full h-full object-cover" /> : <User size={18} />}
                         </div>
                     </div>
                 )}
-                <h1 className="text-lg font-bold text-gray-900 tracking-tight">CondoZap</h1>
-                <div className="absolute right-4">
-                    <button onClick={logout} className="text-gray-500 hover:text-red-500 transition-colors">
-                        <LogOut size={20} />
-                    </button>
-                </div>
+                <img src={logoText} alt="Logo" width={44} className="absolute left-4" />
             </div>
 
             {/* Bottom Navigation */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 h-16 flex justify-around items-center z-10 pb-1 safe-area-bottom">
-                <button
-                    onClick={() => navigate('/')}
-                    className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive('/') ? 'text-blue-600' : 'text-gray-400'}`}
-                >
-                    <Home size={24} strokeWidth={isActive('/') ? 2.5 : 2} />
-                    <span className="text-[10px] font-medium">Início</span>
-                </button>
+            <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 h-[68px] flex justify-around items-center z-10 pb-safe">
+                {navItems.map((item) => {
+                    const active = isActive(item.path);
+                    const Icon = item.icon;
+                    return (
+                        <button
+                            key={item.path}
+                            onClick={() => navigate(item.path)}
+                            className={`relative flex flex-col items-center justify-center w-full h-full transition-all duration-200 ${active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            {/* Linha indicadora superior - Estilo Amazon */}
+                            {active && (
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-600 rounded-b"></div>
+                            )}
 
-                <button
-                    onClick={() => navigate('/my-products')}
-                    className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive('/my-products') ? 'text-blue-600' : 'text-gray-400'}`}
-                >
-                    <Package size={24} strokeWidth={isActive('/my-products') ? 2.5 : 2} />
-                    <span className="text-[10px] font-medium">Meus Produtos</span>
-                </button>
-
-                <button
-                    onClick={() => navigate('/my-condo')}
-                    className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive('/my-condo') ? 'text-blue-600' : 'text-gray-400'}`}
-                >
-                    <Building2 size={24} strokeWidth={isActive('/my-condo') ? 2.5 : 2} />
-                    <span className="text-[10px] font-medium">Impacto</span>
-                </button>
-
-                <button
-                    onClick={() => navigate('/settings')}
-                    className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive('/settings') ? 'text-blue-600' : 'text-gray-400'}`}
-                >
-                    <SettingsIcon size={24} strokeWidth={isActive('/settings') ? 2.5 : 2} />
-                    <span className="text-[10px] font-medium">Configurações</span>
-                </button>
+                            <div className={`flex items-center justify-center transition-transform duration-200 mb-1 mt-1`}>
+                                <Icon size={24} strokeWidth={1.5} />
+                            </div>
+                        </button>
+                    );
+                })}
             </div>
 
             {/* Spacer for Bottom Nav */}

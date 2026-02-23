@@ -3,6 +3,44 @@ import api from '../services/api';
 import Navbar from '../components/Navbar';
 import { Building2, TrendingUp, Handshake, ShoppingBag } from 'lucide-react';
 
+const AnimatedCurrency = ({ value }) => {
+    const [displayValue, setDisplayValue] = useState(0);
+
+    useEffect(() => {
+        if (!value) {
+            setDisplayValue(0);
+            return;
+        }
+
+        // Começar do 0 dá muito mais palco para a desaceleração brilhar e ficar suave
+        const startValue = 0;
+        setDisplayValue(startValue);
+
+        let startTime;
+        const duration = 2500; // 2.5s duration para o freio arrastar de forma leve e premium
+
+        const animate = (currentTime) => {
+            if (!startTime) startTime = currentTime;
+            const progress = Math.min((currentTime - startTime) / duration, 1);
+
+            // easeOutExpo: O clássico 'freio infinito' suave. Vai rápido no começo e rola muito devagarinho até parar.
+            const easeOutProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+            const currentVal = startValue + (value - startValue) * easeOutProgress;
+
+            setDisplayValue(currentVal);
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            }
+        };
+
+        const animationFrame = requestAnimationFrame(animate);
+        return () => cancelAnimationFrame(animationFrame);
+    }, [value]);
+
+    return <>{displayValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</>;
+};
+
 const MyCondo = () => {
     const [stats, setStats] = useState({
         activeTotal: 0,
@@ -17,10 +55,6 @@ const MyCondo = () => {
             .catch(err => console.error(err))
             .finally(() => setLoading(false));
     }, []);
-
-    const formatCurrency = (value) => {
-        return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    };
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -42,7 +76,7 @@ const MyCondo = () => {
                     {loading ? (
                         <div className="h-10 bg-white/20 rounded animate-pulse w-3/4 mb-1"></div>
                     ) : (
-                        <div className="text-3xl font-bold mb-1">{formatCurrency(stats.activeTotal)}</div>
+                        <div className="text-3xl font-bold mb-1"><AnimatedCurrency value={stats.activeTotal} /></div>
                     )}
                     <p className="text-xs text-blue-100/80">em oportunidades circulando no nosso condomínio.</p>
                 </div>
@@ -56,7 +90,7 @@ const MyCondo = () => {
                     {loading ? (
                         <div className="h-10 bg-white/20 rounded animate-pulse w-3/4 mb-1"></div>
                     ) : (
-                        <div className="text-3xl font-bold mb-1">{formatCurrency(stats.soldTotal)}</div>
+                        <div className="text-3xl font-bold mb-1"><AnimatedCurrency value={stats.soldTotal} /></div>
                     )}
                     <p className="text-xs text-green-100/80">gerados em desapegos entre os vizinhos.</p>
                 </div>
@@ -64,7 +98,7 @@ const MyCondo = () => {
                 {/* Ranking de Categorias */}
                 <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
                     <div className="flex items-center gap-2 mb-4 text-gray-800">
-                        <h2 className="font-bold text-lg">O que o pessoal mais procura?</h2>
+                        <h2 className="font-bold text-lg">O que o pessoal mais desapega?</h2>
                     </div>
 
                     {loading ? (

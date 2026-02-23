@@ -158,13 +158,7 @@ const Home = () => {
                 <h3 className='text-white text-sm font-bold'>MAPP BARRA FUNDA - Perdizes</h3>
             </div>
 
-            <main className="px-3 py-3 pb-24">
-                {/* Welcome */}
-                <div className="mb-6">
-                    <h1 className="text-xl font-bold text-gray-900">Olá, {user?.name?.split(' ')[0]}! 👋</h1>
-                    <p className="text-sm text-gray-600 mt-1">Que bom ter você por aqui. Veja o que seus vizinhos prepararam para hoje.</p>
-                </div>
-
+            <main className="px-3 py-6 pb-24">
                 {/* Categories Filter */}
                 <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-3 px-3 scrollbar-hide">
                     <button
