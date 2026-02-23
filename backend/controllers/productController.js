@@ -215,3 +215,42 @@ exports.deleteProduct = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
+exports.getCondominiumStats = async (req, res) => {
+    try {
+        const stats = await Product.aggregate([
+            {
+                $facet: {
+                    activeTotal: [
+                        { $match: { status: 'enabled' } },
+                        { $group: { _id: null, total: { $sum: "$value" } } }
+                    ],
+                    soldTotal: [
+                        { $match: { status: 'sold' } },
+                        { $group: { _id: null, total: { $sum: "$value" } } }
+                    ],
+                    categoriesRanking: [
+                        { $match: { status: { $in: ['enabled', 'sold'] } } },
+                        { $group: { _id: "$category", count: { $sum: 1 } } },
+                        { $sort: { count: -1 } },
+                        { $limit: 3 },
+                        { $lookup: { from: 'categories', localField: '_id', foreignField: '_id', as: 'categoryInfo' } },
+                        { $unwind: { path: "$categoryInfo", preserveNullAndEmptyArrays: true } },
+                        { $project: { _id: 1, count: 1, name: "$categoryInfo.name" } }
+                    ]
+                }
+            }
+        ]);
+
+        const result = {
+            activeTotal: stats[0].activeTotal[0]?.total || 0,
+            soldTotal: stats[0].soldTotal[0]?.total || 0,
+            categoriesRanking: stats[0].categoriesRanking || []
+        };
+
+        res.json(result);
+    } catch (err) {
+        console.error("Error in getCondominiumStats:", err);
+        res.status(500).json({ msg: 'Server Error', error: err.message });
+    }
+};

@@ -9,6 +9,11 @@ const auth = require('../middleware/auth');
 // @access  Public
 router.get('/', productController.getProducts);
 
+// @route   GET api/products/stats/condominium
+// @desc    Get aggregated stats for the condominium dashboard
+// @access  Public
+router.get('/stats/condominium', productController.getCondominiumStats);
+
 // @route   GET api/products/:id
 // @desc    Get product by ID
 // @access  Public

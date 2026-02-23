@@ -6,6 +6,7 @@ import PrivateRoute from './components/PrivateRoute';
 import { AuthProvider } from './context/AuthContext';
 import MyProducts from './pages/MyProducts';
 import Settings from './pages/Settings';
+import MyCondo from './pages/MyCondo';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
             <Route path="/my-products" element={<PrivateRoute><MyProducts /></PrivateRoute>} />
+            <Route path="/my-condo" element={<PrivateRoute><MyCondo /></PrivateRoute>} />
             <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
           </Routes>
         </AuthProvider>

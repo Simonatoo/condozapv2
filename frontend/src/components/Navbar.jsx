@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, LogOut, User, Package, Settings as SettingsIcon } from 'lucide-react';
+import { Home, LogOut, User, Package, Settings as SettingsIcon, Building2 } from 'lucide-react';
 
 const Navbar = () => {
     const { logout, user } = useContext(AuthContext);
@@ -47,6 +47,14 @@ const Navbar = () => {
                 >
                     <Package size={24} strokeWidth={isActive('/my-products') ? 2.5 : 2} />
                     <span className="text-[10px] font-medium">Meus Produtos</span>
+                </button>
+
+                <button
+                    onClick={() => navigate('/my-condo')}
+                    className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive('/my-condo') ? 'text-blue-600' : 'text-gray-400'}`}
+                >
+                    <Building2 size={24} strokeWidth={isActive('/my-condo') ? 2.5 : 2} />
+                    <span className="text-[10px] font-medium">Impacto</span>
                 </button>
 
                 <button
