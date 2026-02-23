@@ -99,7 +99,10 @@ const MyProducts = () => {
     };
 
     const handleAddNew = () => {
-        setEditingProduct(null);
+        if (!user.smsVerified) {
+            alert('Por favor, verifique seu número de telefone antes de adicionar um produto.');
+            return;
+        }
         setEditingProduct(null);
         setFormData({ name: '', description: '', value: '', category: '' });
         setIsModalOpen(true);
