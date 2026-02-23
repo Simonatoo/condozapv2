@@ -51,7 +51,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['active', 'inactive'],
         default: 'active'
-    }
+    },
+    condominiums: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Condominium'
+    }],
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

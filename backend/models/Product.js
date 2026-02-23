@@ -27,6 +27,10 @@ const productSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    condominiums: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Condominium'
+    }],
     category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category',

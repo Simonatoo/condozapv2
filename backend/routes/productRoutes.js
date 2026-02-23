@@ -6,8 +6,8 @@ const auth = require('../middleware/auth');
 
 // @route   GET api/products
 // @desc    Get all products
-// @access  Public
-router.get('/', productController.getProducts);
+// @access  Private
+router.get('/', auth, productController.getProducts);
 
 // @route   GET api/products/stats/condominium
 // @desc    Get aggregated stats for the condominium dashboard

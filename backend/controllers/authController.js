@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Condominium = require('../models/Condominium');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
@@ -7,7 +8,7 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 exports.register = async (req, res) => {
     // ... existing code ...
     try {
-        const { name, email, telefone, apartment, password, role } = req.body;
+        const { name, email, telefone, apartment, password, role, condominios } = req.body;
 
         let user = await User.findOne({ email });
         if (user) {
@@ -23,10 +24,12 @@ exports.register = async (req, res) => {
             telefone,
             apartment,
             password: hashedPassword,
-            role
+            role,
+            condominiums: condominios
         });
 
         await user.save();
+        await user.populate('condominiums', 'name');
 
         const payload = {
             user: {
@@ -41,7 +44,7 @@ exports.register = async (req, res) => {
             { expiresIn: 360000 },
             (err, token) => {
                 if (err) throw err;
-                res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, apartment: user.apartment, photo: user.photo, badges: user.badges, checkedBadges: user.checkedBadges } });
+                res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, apartment: user.apartment, photo: user.photo, badges: user.badges, checkedBadges: user.checkedBadges, condominiums: user.condominiums } });
             }
         );
     } catch (err) {
@@ -54,7 +57,7 @@ exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ email }).populate('condominiums', 'name');
         if (!user) {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
@@ -77,7 +80,7 @@ exports.login = async (req, res) => {
             { expiresIn: 360000 },
             (err, token) => {
                 if (err) throw err;
-                res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, apartment: user.apartment, photo: user.photo, badges: user.badges, checkedBadges: user.checkedBadges } });
+                res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, apartment: user.apartment, photo: user.photo, badges: user.badges, checkedBadges: user.checkedBadges, condominiums: user.condominiums } });
             }
         );
     } catch (err) {
@@ -87,7 +90,7 @@ exports.login = async (req, res) => {
 };
 
 exports.googleLogin = async (req, res) => {
-    const { token, apartment, telefone } = req.body;
+    const { token, apartment, telefone, condominios } = req.body;
     try {
         const ticket = await client.verifyIdToken({
             idToken: token,
@@ -96,17 +99,17 @@ exports.googleLogin = async (req, res) => {
         const payload = ticket.getPayload();
         const { email, name, picture } = payload;
 
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ email }).populate('condominiums', 'name');
 
         if (!user) {
-            // If user doesn't exist and no apartment/telefone provided, request it
-            if (!apartment || !telefone) {
+            // If user doesn't exist and no apartment/telefone/condominios provided, request it
+            if (!apartment || !telefone || !condominios || !condominios.length) {
                 return res.status(200).json({
                     needsRegistration: true,
                     email,
                     name,
                     photo: picture,
-                    msg: 'Por favor, informe seu apartamento e telefone para concluir o cadastro.'
+                    msg: 'Por favor, informe seu apartamento, telefone e condomínio para concluir o cadastro.'
                 });
             }
 
@@ -116,11 +119,13 @@ exports.googleLogin = async (req, res) => {
                 email,
                 apartment,
                 telefone, // Use provided telefone
+                condominiums: condominios, // Link to condominiums
                 password: Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8), // Random dummy password
                 role: 'default', // Correct role based on User model enum
                 photo: picture
             });
             await user.save();
+            await user.populate('condominiums', 'name');
         } else {
             // Update photo if it exists in payload
             if (picture) {
@@ -142,7 +147,7 @@ exports.googleLogin = async (req, res) => {
             { expiresIn: 360000 },
             (err, jwtToken) => {
                 if (err) throw err;
-                res.json({ token: jwtToken, user: { id: user.id, name: user.name, email: user.email, role: user.role, apartment: user.apartment, photo: user.photo, badges: user.badges, checkedBadges: user.checkedBadges } });
+                res.json({ token: jwtToken, user: { id: user.id, name: user.name, email: user.email, role: user.role, apartment: user.apartment, photo: user.photo, badges: user.badges, checkedBadges: user.checkedBadges, condominiums: user.condominiums } });
             }
         );
     } catch (err) {

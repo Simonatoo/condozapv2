@@ -10,12 +10,21 @@ exports.createProduct = async (req, res) => {
             images = req.files.map(file => file.path);
         }
 
+        let userCondominiums = [];
+        if (user_id) {
+            const tempUser = await User.findById(user_id).select('condominiums');
+            if (tempUser && tempUser.condominiums) {
+                userCondominiums = tempUser.condominiums;
+            }
+        }
+
         const newProduct = new Product({
             name,
             description,
             value,
             status,
             user_id,
+            condominiums: userCondominiums,
             category: req.body.category,
             images
         });
@@ -62,6 +71,20 @@ exports.getProducts = async (req, res) => {
         if (status) filter.status = status;
         if (category) filter.category = category;
 
+        // Fetch user from DB using the authenticated req.user to securely apply filtering
+        if (req.user && req.user.id) {
+            const currentUser = await User.findById(req.user.id).select('condominiums');
+            if (currentUser && currentUser.condominiums && currentUser.condominiums.length > 0) {
+                // Filter products that belong to any of the user's condominiums
+                filter.condominiums = { $in: currentUser.condominiums };
+            } else {
+                // If user has no condos linked, return nothing.
+                return res.json([]);
+            }
+        } else {
+            return res.status(401).json({ msg: 'Not authorized' });
+        }
+
         let query = Product.find(filter).sort({ createdAt: -1 });
 
         const page = parseInt(req.query.page);
@@ -72,7 +95,8 @@ exports.getProducts = async (req, res) => {
             query = query.skip(skip).limit(limit);
         }
 
-        const products = await query.populate('user_id', 'name apartment telefone photo badges smsVerified');
+        const products = await query.populate('user_id', 'name apartment telefone photo badges smsVerified')
+            .populate('condominiums', 'name');
         res.json(products);
     } catch (err) {
         console.error(err.message);
@@ -82,7 +106,7 @@ exports.getProducts = async (req, res) => {
 
 exports.getProductById = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id);
+        const product = await Product.findById(req.params.id).populate('condominiums', 'name');
         if (!product) {
             return res.status(404).json({ msg: 'Product not found' });
         }

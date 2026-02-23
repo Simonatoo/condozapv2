@@ -38,10 +38,8 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         const res = await api.post('/auth/login', { email, password });
-        console.log("Login response:", res.data);
         localStorage.setItem('token', res.data.token);
         if (res.data.user) {
-            console.log("Saving user:", res.data.user);
             localStorage.setItem('user', JSON.stringify(res.data.user));
             setUser(res.data.user);
         } else {
@@ -59,10 +57,8 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (userData) => {
         const res = await api.post('/auth/register', userData);
-        console.log("Register response:", res.data);
         localStorage.setItem('token', res.data.token);
         if (res.data.user) {
-            console.log("Saving user:", res.data.user);
             localStorage.setItem('user', JSON.stringify(res.data.user));
             setUser(res.data.user);
         } else {
@@ -72,9 +68,8 @@ export const AuthProvider = ({ children }) => {
         return res.data;
     };
 
-    const googleLogin = async (googleToken, apartment = null, telefone = null) => {
-        const res = await api.post('/auth/google-login', { token: googleToken, apartment, telefone });
-        console.log("Google Login response:", res.data);
+    const googleLogin = async (googleToken, apartment = null, telefone = null, condominios = null) => {
+        const res = await api.post('/auth/google-login', { token: googleToken, apartment, telefone, condominios });
 
         if (res.data.needsRegistration) {
             return res.data; // Return registration requirement info

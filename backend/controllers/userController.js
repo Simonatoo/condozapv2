@@ -1,10 +1,11 @@
 const User = require('../models/User');
+const Condominium = require('../models/Condominium');
 
 // @route   GET /api/users/me
 // @desc    Get current user data
 exports.getMe = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select('-password');
+        const user = await User.findById(req.user.id).select('-password').populate('condominium', 'name');
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });
         }
@@ -19,7 +20,8 @@ exports.getMe = async (req, res) => {
             checkedBadges: user.checkedBadges,
             telefone: user.telefone,
             smsVerified: user.smsVerified,
-            points: user.points
+            points: user.points,
+            condominium: user.condominium
         });
     } catch (err) {
         console.error(err.message);

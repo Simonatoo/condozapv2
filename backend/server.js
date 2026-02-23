@@ -37,6 +37,7 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/categories', require('./routes/categoryRoutes'));
+app.use('/api/condominiums', require('./routes/condominiumRoutes'));
 
 app.use('/health', (req, res) => res.status(200).send('Im online 👍'))
 

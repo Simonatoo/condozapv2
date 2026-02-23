@@ -1,9 +1,10 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, ArrowRight, User, Phone, Home, X, ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import Logo from '../assets/logo-color.svg';
+import api from '../services/api';
 
 const Login = () => {
     const [isRegister, setIsRegister] = useState(false);
@@ -19,6 +20,8 @@ const Login = () => {
     const [telefone, setTelefone] = useState('');
     const [apartmentNum, setApartmentNum] = useState('');
     const [apartmentBlock, setApartmentBlock] = useState('');
+    const [condominium, setCondominium] = useState('');
+    const [condominioList, setCondominioList] = useState([]);
 
     const { login, register, googleLogin } = useContext(AuthContext);
     const navigate = useNavigate();
@@ -27,6 +30,32 @@ const Login = () => {
 
     const [showGoogleApartment, setShowGoogleApartment] = useState(false);
     const [googleToken, setGoogleToken] = useState(null);
+
+    const handlePhoneChange = (e) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 11) value = value.slice(0, 11);
+
+        if (value.length > 2) {
+            value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+        }
+        if (value.length > 10) {
+            value = `${value.slice(0, 10)}-${value.slice(10)}`;
+        }
+
+        setTelefone(value);
+    };
+
+    useEffect(() => {
+        const fetchCondominios = async () => {
+            try {
+                const res = await api.get('/condominiums');
+                setCondominioList(res.data);
+            } catch (err) {
+                console.error("Error fetching condominiums:", err);
+            }
+        };
+        fetchCondominios();
+    }, []);
 
     const handleEmailLoginClick = () => {
         setIsRegister(false);
@@ -53,7 +82,8 @@ const Login = () => {
                     return;
                 }
                 const apartment = `${apartmentNum} ${apartmentBlock}`.trim();
-                await register({ name, email, password, telefone, apartment });
+                const data = { name: name, email: email, password: password, telefone: telefone, apartment: apartment, condominios: [condominium] }
+                await register(data);
             } else {
                 await login(email, password);
             }
@@ -97,7 +127,7 @@ const Login = () => {
         setLoading(true);
         setError('');
         try {
-            await googleLogin(googleToken, apartment, telefone);
+            await googleLogin(googleToken, apartment, telefone, [condominium]);
             navigate('/');
         } catch (err) {
             console.error("Google Registration Error:", err);
@@ -112,9 +142,6 @@ const Login = () => {
             <div className="min-h-screen bg-white px-6 py-12 flex flex-col">
                 <div className="flex-1 flex flex-col justify-center">
                     <div className="text-center mb-10">
-                        <div className="mx-auto h-16 w-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200 mb-6">
-                            <Home className="text-white" size={32} />
-                        </div>
                         <h2 className="text-2xl font-bold text-gray-900">
                             Quase lá, {name.split(' ')[0]}!
                         </h2>
@@ -138,10 +165,34 @@ const Login = () => {
                                     type="tel"
                                     required
                                     value={telefone}
-                                    onChange={(e) => setTelefone(e.target.value)}
+                                    onChange={handlePhoneChange}
                                     className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3.5 pl-11 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
                                     placeholder="(00) 00000-0000"
                                 />
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1.5 ml-1 leading-snug">
+                                Importante que esse número esteja correto para direcionarmos compradores para o seu WhatsApp.
+                            </p>
+                        </div>
+
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Condomínio</label>
+                            <div className="relative">
+                                <Home className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                <select
+                                    required
+                                    value={condominium}
+                                    onChange={(e) => setCondominium(e.target.value)}
+                                    className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3.5 pl-11 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                >
+                                    <option value="">Selecione seu condomínio</option>
+                                    {condominioList.map((condo) => (
+                                        <option key={condo._id} value={condo._id}>
+                                            {condo.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
 
@@ -166,8 +217,8 @@ const Login = () => {
                                     type="text"
                                     maxLength={2}
                                     value={apartmentBlock}
-                                    onChange={(e) => setApartmentBlock(e.target.value)}
-                                    className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3.5 px-4 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                    onChange={(e) => setApartmentBlock(e.target.value.toUpperCase())}
+                                    className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3.5 px-4 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none uppercase"
                                     placeholder="Ex: A"
                                 />
                             </div>
@@ -225,25 +276,26 @@ const Login = () => {
                         text="signin_with"
                         width="100%"
                         locale="pt_BR"
+                        className="w-full"
                     />
                 </div>
 
                 <div className="flex gap-3">
                     <button
                         onClick={handleEmailLoginClick}
-                        className="flex w-full justify-center items-center bg-[#005E9E] text-white font-regular py-2 px-6 rounded-full border border-blue-600/30 hover:bg-gray-200 transition-colors active:scale-[0.98]"
+                        className="flex w-full text-sm justify-center items-center bg-[#005E9E] text-white font-regular py-2 px-6 rounded-full border border-blue-600/30 hover:bg-gray-200 transition-colors active:scale-[0.98]"
                     >
                         <Mail size={18} className="mr-2" />
                         Entrar com e-mail
                     </button>
                 </div>
 
-                <button
+                {/* <button
                     onClick={handleCreateAccountClick}
                     className="w-full text-[#005E9E] font-medium py-2 rounded-full hover:bg-blue-50 transition-colors"
                 >
                     Ainda não tenho uma conta
-                </button>
+                </button> */}
             </div>
 
             {/* Full Screen Email Modal */}
@@ -301,7 +353,7 @@ const Login = () => {
                                                 type="tel"
                                                 required={isRegister}
                                                 value={telefone}
-                                                onChange={(e) => setTelefone(e.target.value)}
+                                                onChange={handlePhoneChange}
                                                 className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3.5 pl-11 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
                                                 placeholder="(00) 00000-0000"
                                             />
@@ -309,6 +361,26 @@ const Login = () => {
                                         <p className="text-xs text-gray-500 mt-1.5 ml-1 leading-snug">
                                             Importante que esse número esteja correto para direcionarmos compradores para o seu WhatsApp.
                                         </p>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Condomínio</label>
+                                        <div className="relative">
+                                            <Home className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                                            <select
+                                                required={isRegister}
+                                                value={condominium}
+                                                onChange={(e) => setCondominium(e.target.value)}
+                                                className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3.5 pl-11 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                            >
+                                                <option value="">Selecione seu condomínio</option>
+                                                {condominioList.map((condo) => (
+                                                    <option key={condo._id} value={condo._id}>
+                                                        {condo.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
 
                                     <div className="flex gap-3">
@@ -332,8 +404,8 @@ const Login = () => {
                                                 type="text"
                                                 maxLength={2}
                                                 value={apartmentBlock}
-                                                onChange={(e) => setApartmentBlock(e.target.value)}
-                                                className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3.5 px-4 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                                onChange={(e) => setApartmentBlock(e.target.value.toUpperCase())}
+                                                className="block w-full rounded-2xl border-gray-200 bg-gray-50 py-3.5 px-4 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none uppercase"
                                                 placeholder="Ex: A"
                                             />
                                         </div>
@@ -415,7 +487,7 @@ const Login = () => {
                         </form>
                     </div>
 
-                    <div className="p-4 text-center border-t border-gray-100">
+                    {/* <div className="p-4 text-center border-t border-gray-100">
                         <button
                             type="button"
                             onClick={() => {
@@ -426,7 +498,7 @@ const Login = () => {
                         >
                             {isRegister ? 'Já tenho uma conta' : 'Não tenho conta ainda'}
                         </button>
-                    </div>
+                    </div> */}
                 </div>
             )}
         </div>

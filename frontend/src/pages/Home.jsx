@@ -155,7 +155,7 @@ const Home = () => {
 
             {/* Banner */}
             <div className='bg-[#E12D53] text-center py-2'>
-                <h3 className='text-white text-sm font-bold'>MAPP BARRA FUNDA - Perdizes</h3>
+                <h3 className='text-white text-sm font-bold'>{user.condominiums[0].name}</h3>
             </div>
 
             <main className="px-3 py-6 pb-24">
