@@ -234,7 +234,7 @@ const Home = () => {
                                             <div className="flex align-middle items-center gap-1.5 mt-1">
                                                 {user?.smsVerified ? (
                                                     <span className="text-xs text-gray-500 font-medium flex items-center gap-1">
-                                                        {product.user_id?.name}
+                                                        {product.user_id?.name?.length > 25 ? `${product.user_id.name.substring(0, 25)}...` : product.user_id?.name}
                                                         {product.user_id?.smsVerified ? <Verified /> : null}
                                                     </span>
                                                 ) : null}
@@ -361,8 +361,8 @@ const Home = () => {
                                 </div>
                                 <div className="flex gap-2 mt-6 flex-wrap">
                                     {selectedProduct.user_id?.badges ? selectedProduct.user_id.badges.filter(b => BADGE_MAP[b]).map((badge, index) => (
-                                        <div className="flex flex-col items-center gap-1 w-16 text-center">
-                                            <span key={index}
+                                        <div key={index} className="flex flex-col items-center gap-1 w-16 text-center">
+                                            <span
                                                 onClick={() => handleBadgeClick(badge)}
                                                 className="cursor-pointer text-xl p-2 bg-gray-50 border border-gray-200 rounded-full hover:bg-gray-200 transition-colors w-12 h-12 flex items-center justify-center"
                                             >
