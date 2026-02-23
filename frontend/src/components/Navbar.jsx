@@ -15,9 +15,9 @@ const Navbar = () => {
 
     const navItems = [
         { path: '/', label: 'Início', icon: Home },
-        { path: '/my-products', label: 'Meus Produtos', icon: Package },
+        { path: '/my-products', label: 'Meus Anúncios', icon: Package },
         { path: '/my-condo', label: 'Impacto', icon: Building2 },
-        { path: '/settings', label: 'Configurações', icon: SettingsIcon },
+        { path: '/settings', label: 'Ajustes', icon: SettingsIcon },
     ];
 
     return (
@@ -44,23 +44,27 @@ const Navbar = () => {
                     const active = isActive(item.path);
                     const Icon = item.icon;
                     return (
-                        <button
-                            key={item.path}
-                            onClick={() => navigate(item.path)}
-                            className={`relative flex flex-col items-center justify-center w-full h-full transition-all duration-200 ${active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
-                                }`}
-                        >
-                            {/* Linha indicadora superior - Estilo Amazon */}
-                            {active && (
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-600 rounded-b"></div>
-                            )}
+                        <div className='w-full h-full flex flex-col items-center justify-center'>
+                            <button
+                                key={item.path}
+                                onClick={() => navigate(item.path)}
+                                className={`relative flex flex-col items-center justify-center w-full h-full transition-all duration-200 ${active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                            >
+                                {/* Linha indicadora superior - Estilo Amazon */}
+                                {active && (
+                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-600 rounded-b"></div>
+                                )}
 
-                            <div className={`flex items-center justify-center transition-transform duration-200 mb-1 mt-1`}>
-                                <Icon size={24} strokeWidth={1.5} />
-                            </div>
-                        </button>
+                                <div className={`flex items-center justify-center transition-transform duration-200 mt-1`}>
+                                    <Icon size={24} strokeWidth={1.5} />
+                                </div>
+                                <span className='text-[10px] mt-1 font-bold'>{item.label}</span>
+                            </button>
+                        </div>
                     );
                 })}
+
             </div>
 
             {/* Spacer for Bottom Nav */}
