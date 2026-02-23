@@ -18,7 +18,8 @@ exports.getMe = async (req, res) => {
             badges: user.badges,
             checkedBadges: user.checkedBadges,
             telefone: user.telefone,
-            smsVerified: user.smsVerified
+            smsVerified: user.smsVerified,
+            points: user.points
         });
     } catch (err) {
         console.error(err.message);

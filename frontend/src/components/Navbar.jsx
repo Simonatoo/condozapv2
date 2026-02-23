@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, LogOut, User, Package, Settings as SettingsIcon, Building2, BellRing, Bell } from 'lucide-react';
@@ -32,6 +32,9 @@ const Navbar = () => {
                         </div>
                     </div>
                 )}
+                {/* {user && user.points && (
+                    <span className="text-sm font-medium text-gray-700">CondoPoints: {user.points}</span>
+                )} */}
                 <img src={logoText} alt="Logo" width={44} className="absolute left-4" />
             </div>
 
