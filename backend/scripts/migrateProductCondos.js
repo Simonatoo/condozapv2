@@ -19,7 +19,7 @@ const migrateProductCondos = async () => {
         console.log(`Found ${products.length} products to migrate.`);
 
         for (const product of products) {
-            await Product.findByIdAndUpdate(product._id, { condominiums: [condos[0], condos[1]] });
+            await Product.findByIdAndUpdate(product._id, { condominiums: [condos[0], condos[1], condos[2]] });
         }
 
         console.log('Product condos migrated successfully');

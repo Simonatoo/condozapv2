@@ -12,7 +12,7 @@ const migrateUserCondos = async () => {
         const condos = await Condominium.find();
 
         for (const user of users) {
-            await User.findByIdAndUpdate(user._id, { condominiums: [condos[0]] });
+            await User.findByIdAndUpdate(user._id, { condominiums: [condos[0], condos[1], condos[2]] });
         }
 
         console.log('User condos migrated successfully');

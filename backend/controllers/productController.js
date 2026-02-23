@@ -72,6 +72,8 @@ exports.getProducts = async (req, res) => {
         if (category) filter.category = category;
 
         // Fetch user from DB using the authenticated req.user to securely apply filtering
+        // Temporarily removing condo filter so everyone sees everything
+        /*
         if (req.user && req.user.id) {
             const currentUser = await User.findById(req.user.id).select('condominiums');
             if (currentUser && currentUser.condominiums && currentUser.condominiums.length > 0) {
@@ -84,6 +86,7 @@ exports.getProducts = async (req, res) => {
         } else {
             return res.status(401).json({ msg: 'Not authorized' });
         }
+        */
 
         let query = Product.find(filter).sort({ createdAt: -1 });
 
