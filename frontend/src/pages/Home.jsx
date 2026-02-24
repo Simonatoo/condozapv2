@@ -54,12 +54,33 @@ const Home = () => {
 
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [activeImage, setActiveImage] = useState('');
+    const [sellerProducts, setSellerProducts] = useState([]);
+    const [loadingSellerProducts, setLoadingSellerProducts] = useState(false);
 
     useEffect(() => {
         if (selectedProduct && selectedProduct.images && selectedProduct.images.length > 0) {
             setActiveImage(selectedProduct.images[0]);
         } else {
             setActiveImage('');
+        }
+
+        if (selectedProduct) {
+            const fetchSellerProducts = async () => {
+                setLoadingSellerProducts(true);
+                try {
+                    const userId = selectedProduct.user_id?._id || selectedProduct.user_id;
+                    const res = await api.get(`/products?status=enabled&user_id=${userId}&limit=10`);
+                    const otherProducts = res.data.filter(p => p._id !== selectedProduct._id);
+                    setSellerProducts(otherProducts);
+                } catch (err) {
+                    console.error('Error fetching seller products:', err);
+                } finally {
+                    setLoadingSellerProducts(false);
+                }
+            };
+            fetchSellerProducts();
+        } else {
+            setSellerProducts([]);
         }
     }, [selectedProduct]);
 
@@ -323,6 +344,7 @@ const Home = () => {
                                 </span>
                             </div>
 
+                            {/* Description */}
                             <div className="border-t border-gray-100 py-4">
                                 <h3 className="font-semibold text-gray-900 mb-2">Descrição</h3>
                                 <p className="text-gray-600 leading-relaxed text-sm whitespace-pre-wrap">
@@ -330,8 +352,61 @@ const Home = () => {
                                 </p>
                             </div>
 
+                            {/* Other products from seller */}
+                            {loadingSellerProducts ? (
+                                <div className='border-t border-gray-100 py-4'>
+                                    <div className="h-5 w-48 bg-gray-200 rounded animate-pulse mb-3"></div>
+                                    <div className="flex gap-3 overflow-hidden pt-1">
+                                        {[1, 2, 3].map(i => (
+                                            <div key={i} className="min-w-[130px] w-[130px] h-[170px] bg-gray-100 rounded-lg animate-pulse shrink-0"></div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : sellerProducts.length > 0 ? (
+                                <div className='border-t border-gray-100 py-4'>
+                                    <h3 className='font-semibold text-gray-900 mb-3'>Anúnicos do vendedor(a)</h3>
+                                    <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide snap-x pt-1 -mr-5 pr-5">
+                                        {sellerProducts.map(product => (
+                                            <div
+                                                key={product._id}
+                                                className="min-w-[130px] w-[150px] shrink-0 cursor-pointer snap-start bg-white border border-gray-200 rounded-lg hover:shadow-md transition-all overflow-hidden flex flex-col active:scale-95"
+                                                onClick={() => {
+                                                    const modalScrollArea = document.querySelector('.overflow-y-auto');
+                                                    if (modalScrollArea) modalScrollArea.scrollTop = 0;
+                                                    setSelectedProduct(product);
+                                                }}
+                                            >
+                                                <div className="h-28 bg-gray-50 flex items-center justify-center overflow-hidden">
+                                                    {product.images?.length > 0 ? (
+                                                        <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <span className="text-gray-400 text-[10px] text-center px-2">Sem Imagem</span>
+                                                    )}
+                                                </div>
+                                                <div className="p-2.5 flex flex-col flex-1">
+                                                    <p className="text-sm text-gray-700 leading-snug line-clamp-2 font-medium mb-1">{product.name}</p>
+                                                    <div className="mt-auto">
+                                                        <span className="text-md font-semibold text-gray-900">
+                                                            R$ {Math.floor(product.value).toLocaleString('pt-BR')}
+                                                        </span>
+                                                        <span className="text-md font-semibold text-gray-900">
+                                                            ,{(selectedProduct.value % 1).toFixed(2).substring(2)}
+                                                        </span>
+                                                        {(product.value % 1) > 0 && (
+                                                            <span className="text-[10px] font-semibold text-gray-900 align-top relative top-px">
+                                                                ,{(product.value % 1).toFixed(2).substring(2)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : null}
+
                             <div className="border-t border-gray-100 py-4">
-                                <h3 className="font-semibold text-gray-900 mb-2">Vendedor</h3>
+                                <h3 className="font-semibold text-gray-900 mb-2">Vendedor(a)</h3>
                                 <div className="flex items-center">
                                     <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold mr-3 overflow-hidden relative">
                                         {selectedProduct.user_id?.photo ? <img src={selectedProduct.user_id.photo} alt="Photo" className='w-full h-full object-cover' /> : <User size={24} />}

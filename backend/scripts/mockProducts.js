@@ -65,7 +65,7 @@ const mockProducts = async () => {
             const randomName = productNames[Math.floor(Math.random() * productNames.length)];
             const randomDesc = productDescriptions[Math.floor(Math.random() * productDescriptions.length)];
             const randomPrice = Math.floor(Math.random() * (2500 - 50 + 1) + 50);
-            const randomUser = users[Math.floor(Math.random() * users.length)]._id;
+            const selectedUser = users[Math.floor(Math.random() * users.length)];
             const randomCategory = categories[Math.floor(Math.random() * categories.length)]._id;
 
             const numImages = Math.floor(Math.random() * 3) + 1; // 1 a 3 imagens
@@ -76,9 +76,10 @@ const mockProducts = async () => {
                 description: randomDesc,
                 value: randomPrice,
                 status: 'enabled',
-                user_id: randomUser,
+                user_id: selectedUser._id,
                 category: randomCategory,
-                images: images
+                images: images,
+                condominiums: selectedUser.condominiums
             });
 
             await newProduct.save();
